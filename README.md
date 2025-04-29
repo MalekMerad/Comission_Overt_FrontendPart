@@ -15,5 +15,6 @@ Follow these steps to get the project up and running locally:
 
 ```bash
 git clone https://github.com/MalekMerade/comission_overt_FrontendPart.git
-cd comission_overt_app/Frontend
+cd Frontend
 npm install
+npm run dev
