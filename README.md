@@ -1,20 +1,12 @@
-# 🎨 Comission Overt App - Frontend
+# React + Vite
 
-This is the frontend for the **Comission Overt App** built with **React** and **Vite**.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## ⚙️ Technologies Used
+Currently, two official plugins are available:
 
-- [React](https://reactjs.org/)
-- [Vite](https://vitejs.dev/)
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## 🚀 Getting Started
+## Expanding the ESLint configuration
 
-Follow these steps to get the project up and running locally:
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/MalekMerade/comission_overt_FrontendPart.git
-cd Frontend
-npm install
-npm run dev
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.

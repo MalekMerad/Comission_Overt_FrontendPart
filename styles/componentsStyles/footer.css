@@ -1,0 +1,153 @@
+/* Footer Contact Section Styles */
+.footer-section {
+    background: #1A2B6B;
+    color: white;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+}
+
+.contact-container {
+    width: 100%;
+    max-width: 1200px;
+    padding: 60px 40px;
+    position: relative;
+    display: grid;
+    grid-template-areas: 
+        "title"
+        "form";
+    grid-template-columns: 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+.contact-title {
+    grid-area: title;
+    text-align: center;
+}
+
+.contact-title h1 {
+    font-size: 48px;
+    font-weight: bold;
+    margin: 0;
+    font-family: sans-serif;
+    color: white;
+}
+
+.contact-form-container {
+    grid-area: form;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+}
+
+.form-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-field.full-width {
+    flex: 1 1 100%;
+}
+
+.form-field label {
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: sans-serif;
+}
+
+.form-field input,
+.form-field textarea {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid white;
+    color: white;
+    padding: 8px 0;
+    font-size: 16px;
+    outline: none;
+    font-family: sans-serif;
+}
+
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+    color: #ccc;
+    font-size: 14px;
+}
+
+.form-field textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.submit-button {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 12px 0;
+    font-family: sans-serif;
+    align-self: flex-start;
+    transition: opacity 0.3s ease;
+}
+
+.submit-button:hover {
+    opacity: 0.8;
+}
+
+/* Responsive Design for Footer Contact Section */
+@media (max-width: 1024px) {
+    .contact-container {
+        gap: 30px;
+        padding: 40px 20px;
+    }
+    
+    .contact-title h1 {
+        font-size: 36px;
+    }
+}
+
+@media (max-width: 768px) {
+    .contact-container {
+        padding: 30px 15px;
+        gap: 25px;
+    }
+    
+    .contact-title h1 {
+        font-size: 28px;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .contact-container {
+        padding: 20px 10px;
+        gap: 20px;
+    }
+    
+    .contact-title h1 {
+        font-size: 24px;
+    }
+}
