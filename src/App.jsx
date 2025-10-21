@@ -4,22 +4,17 @@ import {
   RouterProvider
 } from 'react-router-dom'
 
-/**Pages */
+
 import Home from './pages/Home'
 import Login from './pages/Login'
-import SignUp from './pages/SignUp'
 import NotFound from './pages/NotFound'
+import Administrator from './pages/Administrator'
 
-/** Components */
-import Navbar from './components/Navbar'
-import Footer from './components/Footer'
 function App() {
 
   const Layout = () => (
     <div>
-      <Navbar />
       <Outlet />
-      <Footer />
     </div>
   );
   
@@ -37,14 +32,14 @@ function App() {
       path : '/',
       element : <Layout/>,
       children : [
-        {path : '/',element : <Home/>}
+        {path : '/',element : <Home/>},
+        {path : '/manage',element : <Administrator/>}
       ]
     },
     {
       element : <AuthLayout/>,
       children:[
         {path : '/login' , element : <Login/>},
-        {path : '/register', element : <SignUp/>}
       ]
     },
     { path: '*', element: <NotFound /> },
