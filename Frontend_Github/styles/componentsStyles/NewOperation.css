@@ -1,0 +1,279 @@
+
+.NewOperation-container {
+    background: var(--white-pure);
+    box-shadow: 0 8px 48px 0 rgba(120,81,169,0.09), 0px 2px 8px 0 rgba(149, 89, 255, 0.025);
+    border-radius: 26px;
+    max-width: 560px;
+    min-width: 350px;
+    margin: 44px auto 0 auto;
+    padding: 38px 34px 30px 34px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    min-height: 540px;
+    z-index: 2;
+    overflow: hidden;
+}
+@media only screen and (max-width: 650px) {
+    .NewOperation-container {
+        max-width: 97vw;
+        min-width: unset;
+        padding: 10px 7vw;
+    }
+}
+
+.progress-steps {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 38px;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+}
+
+.step-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--purple-light);
+    color: var(--purple-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.4rem;
+    margin-bottom: 7px;
+    box-shadow: 0 2px 8px rgba(149,89,255,0.09);
+    border: 2.2px solid var(--purple-light);
+    transition: background 0.22s, color 0.22s, border 0.22s;
+}
+
+.step.active .step-number,
+.step .step-number.active {
+    background: var(--purple-main);
+    color: var(--white-pure);
+    border: 2.2px solid var(--purple-main);
+}
+
+.step span {
+    font-size: 0.97rem;
+    color: var(--purple-dark);
+    font-weight: 500;
+    background: none;
+    letter-spacing: 0.12px;
+    white-space: nowrap;
+}
+
+.step.active span,
+.step .step-number.active + span {
+    color: var(--purple-main);
+    font-weight: 600;
+}
+
+.step-connector {
+    height: 2.8px;
+    background: var(--purple-light);
+    flex: 1;
+    margin: 0 8px;
+    border-radius: 3px;
+    opacity: 0.80;
+    box-shadow: 0px 1px 2px rgba(149,89,255,0.07);
+}
+
+.step:last-child .step-connector {
+    display: none;
+}
+
+.informations-container.step-content {
+    width: 100%;
+    background: var(--white-soft);
+    border-radius: 18px;
+    box-shadow: 0 1px 15px 0 rgba(120,81,169,0.07);
+    padding: 32px 30px 24px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 0 auto;
+    gap: 0;
+}
+
+@media only screen and (max-width: 650px) {
+    .informations-container.step-content {
+        padding: 19px 2vw 12px 2vw;
+    }
+}
+
+.informations-container.step-content h1 {
+    margin-top: 0;
+    margin-bottom: 22px;
+    font-size: 1.32rem;
+    font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+    color: var(--purple-dark);
+    font-weight: 700;
+    letter-spacing: .25px;
+    background: linear-gradient(90deg, var(--purple-main), #ae96df 85%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 19px;
+    width: 100%;
+}
+
+.form-group label {
+    color: var(--purple-main);
+    font-size: 1.01rem;
+    font-weight: 500;
+    margin-bottom: 0px;
+    letter-spacing: .13px;
+}
+
+.form-group input[type="text"],
+.form-group textarea {
+    width: 100%;
+    border: 1.5px solid var(--border-soft, #e0d7fa);
+    background: var(--white-pure);
+    color: var(--purple-dark);
+    border-radius: 11px;
+    padding: 10px 13px;
+    font-size: 1.06rem;
+    margin-top: 5px;
+    margin-bottom: 0;
+    box-sizing: border-box;
+    transition: border 0.22s, box-shadow 0.19s;
+    outline: none;
+    resize: none;
+}
+
+.form-group input[type="text"]:focus,
+.form-group textarea:focus {
+    border: 1.5px solid var(--purple-main);
+    box-shadow: 0 1px 8px 0 rgba(149,89,255,0.05);
+    background: var(--white-soft);
+}
+
+.form-group textarea {
+    min-height: 68px;
+    max-height: 120px;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.radio-btns-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 6px;
+}
+
+.radio-btns-container label {
+    display: flex;
+    align-items: center;
+    background: var(--white-shadow);
+    border-radius: 8px;
+    padding: 7px 18px 7px 9px;
+    cursor: pointer;
+    transition: background 0.17s;
+    font-size: 1.01rem;
+    font-weight: 500;
+    color: var(--purple-dark);
+    border: 1px solid var(--border-soft, #e0d7fa);
+}
+
+.radio-btns-container input[type="radio"] {
+    accent-color: var(--purple-main);
+    margin-right: 7px;
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+}
+
+.radio-btns-container label:hover,
+.radio-btns-container input[type="radio"]:focus + label {
+    background: var(--white-pure);
+}
+
+.form-navigation {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    gap: 18px;
+    margin-top: 18px;
+}
+
+.form-navigation button {
+    padding: 10px 22px;
+    border: none;
+    border-radius: 9px;
+    background: var(--purple-main);
+    color: var(--white-pure);
+    font-weight: 600;
+    font-size: 1.05rem;
+    box-shadow: 0 2px 18px 0 rgba(120,81,169,0.07);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.form-navigation button:disabled,
+.form-navigation button[disabled] {
+    background: var(--purple-light);
+    color: var(--white-shadow);
+    cursor: not-allowed;
+}
+
+.form-navigation button:hover:enabled {
+    background: var(--purple-dark);
+    color: var(--white-pure);
+}
+
+@media (max-width: 480px) {
+    .progress-steps,
+    .informations-container.step-content {
+        padding: 0 2vw;
+    }
+}
+
+.NewOperation-container,
+.informations-container.step-content {
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+}
+
+::-webkit-input-placeholder { color: #b8b3c9; }
+::-moz-placeholder { color: #b8b3c9; }
+:-ms-input-placeholder { color: #b8b3c9; }
+::placeholder { color: #b8b3c9; }
+
+input[type="text"]:disabled,
+textarea:disabled {
+    background: #eeebf7;
+    color: #8f86b3;
+    cursor: not-allowed;
+}
+
+body, html {
+    overflow-x: hidden !important;
+}
+
+@media (max-width: 410px) {
+    .NewOperation-container {
+        padding: 8px 0px;
+        min-width: 0;
+    }
+}
+
+/*----*/
+

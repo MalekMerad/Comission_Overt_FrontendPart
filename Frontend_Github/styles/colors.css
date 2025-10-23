@@ -1,0 +1,20 @@
+:root {
+    
+   
+    --white-pure: #FFFFFF;
+    --white-soft: #F9FAFB;
+    --white-shadow: #F0F2F5;
+  
+    --purple-light: #D6B3FF;
+    --purple-main: #7851A9;
+    --purple-dark: #2E0854;
+  
+    --text-dark: #1A1A1A;
+
+    --brand-navy: #122a5c; 
+    --brand-navy-700: #0f224a;
+    --accent-red: #d72626; 
+    --border-soft: #e6e9ef;
+    --shadow-soft: rgba(16, 24, 40, 0.04);
+  }
+  
