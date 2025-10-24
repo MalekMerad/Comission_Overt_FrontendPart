@@ -58,7 +58,7 @@ function Administrator(){
             return(
                 <div className='default-content'>
                         <img src={PlatformLogo}/>
-                        <h2>Bienvenue dans Projet Overture</h2>
+                        <h2>Bienvenue dans PlisFlow</h2>
                         <p>Sélectionnez une option dans le menu de gauche pour commencer.</p>
                 </div>
             )

@@ -43,15 +43,25 @@ function NewOperation(){
                     <h1>Information de base</h1>
                     <div className="form-group">
                         <label>Numéro d'opération</label>
-                        <input type="text"/>
+                        <input 
+                            type="text"
+                            placeholder="Ex : 2024-00054"
+                        />
                     </div>
                     <div className="form-group">
                         <label>Service de passation des marchés</label>
-                        <input type="text"/>
+                        <input 
+                            type="text"
+                            placeholder="Ex : Direction des Achats"
+                        />
                     </div>
                     <div className="form-group">
                         <label>Objectif de l'opération</label>
-                        <textarea rows='10' cols='50'></textarea>
+                        <textarea 
+                            rows='10' 
+                            cols='50'
+                            placeholder="Ex : Amélioration de l’infrastructure électrique dans la région nord"
+                        ></textarea>
                     </div>
                 </div>
             )}
@@ -146,38 +156,43 @@ function NewOperation(){
                                 <input
                                     type="radio"
                                     name="methodAttribuation"
-                                    value="Appel des Offres Ouvert"
-                                    checked={methodAttribuation === 'Appel des Offres Ouvert'}
+                                    value="Appel d'Offres Ouvert"
+                                    checked={methodAttribuation === "Appel d'Offres Ouvert"}
                                     onChange={(e) => setMethodAttribuation(e.target.value)}
                                 />
-                                Appel des Offres Ouvert
+                                Appel d'Offres Ouvert
                             </label>
                             <label>
                                 <input
                                     type="radio"
                                     name="methodAttribuation"
-                                    value="Appel des Offres Restreint"
-                                    checked={methodAttribuation === 'Appel des Offres Restreint'}
+                                    value="Appel d'Offres Restreint"
+                                    checked={methodAttribuation === "Appel d'Offres Restreint"}
                                     onChange={(e) => setMethodAttribuation(e.target.value)}
                                 />
-                                Appel des Offres Restreint
+                                Appel d'Offres Restreint
                             </label>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Step 3: Market and Visa */}
             {currentStep === 3 && (
                 <div className="informations-container step-content">
                     <h1>Marché et Visa</h1>
                     <div className="form-group">
                         <label>Numéro de visa</label>
-                        <input type="text"/>
+                        <input 
+                            type="text"
+                            placeholder="Ex : VISA-2024-00128" 
+                        />
                     </div>
                     <div className="form-group">
                         <label>Date de visa</label>
-                        <input type='date'/>
+                        <input 
+                            type='date'
+                            placeholder="jj/mm/aaaa"
+                        />
                     </div>
                 </div>
             )}

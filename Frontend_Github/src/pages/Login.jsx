@@ -107,7 +107,7 @@ function Login() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.5 }}
           >
-            Bienvenue sur Project Overt
+            Bienvenue sur PlisFlow
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}

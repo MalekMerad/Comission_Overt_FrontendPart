@@ -97,7 +97,7 @@ function Home() {
                 transition: { duration: 0.4, ease: "easeIn" }
               }}
             >
-              Project Overture
+              PlisFlow
             </motion.h1>
 
             <motion.div
