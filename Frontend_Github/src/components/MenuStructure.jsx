@@ -6,7 +6,6 @@ export default {
                 "Voir la liste des opérations"
             ],
             "Gestion des Lots": [
-                "Créer un nouveau lot",
                 "Voir la liste des lots"
             ],
             "Annonces": [

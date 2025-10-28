@@ -1,11 +1,34 @@
 import { useState } from "react";
 import '../../../styles/componentsStyles/NewOperation.css';
+import { newOperation } from '../../services/OperationsServices/AddOperationSrv';
 
 function NewOperation(){
     const [typeDeTravau, setTypeDeTravau] = useState('none');
     const [typeDeBudget, setTypeDeBudget] = useState('none');
     const [methodAttribuation, setMethodAttribuation] = useState('none');
     const [currentStep, setCurrentStep] = useState(1);
+    
+    // Form data state
+    const [formData, setFormData] = useState({
+        NumOperation: '',
+        ServContract: '',
+        Objectif: '',
+        TravalieType: 'none',
+        BudgetType: 'none',
+        MethodAttribuation: 'none',
+        VisaNum: '',
+        DateVisa: ''
+    });
+    
+    // Status state
+    const [operationStatus, setOperationStatus] = useState({
+        show: false,
+        type: '', // 'success', 'error', 'warning'
+        message: '',
+        code: null
+    });
+    
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const nextStep = () => {
         if (currentStep < 3) {
@@ -19,8 +42,124 @@ function NewOperation(){
         }
     };
 
+    // Handle input changes
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    // Handle radio button changes
+    const handleRadioChange = (name, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    // Show status panel
+    const showStatus = (type, message, code = null) => {
+        setOperationStatus({
+            show: true,
+            type,
+            message,
+            code
+        });
+        
+        // Auto hide after 5 seconds
+        setTimeout(() => {
+            setOperationStatus(prev => ({ ...prev, show: false }));
+        }, 5000);
+    };
+
+    // Handle form submission
+    const handleSubmit = async () => {
+        // Validate all fields
+        const requiredFields = ['NumOperation', 'ServContract', 'Objectif', 'VisaNum', 'DateVisa'];
+        const emptyFields = requiredFields.filter(field => !formData[field]);
+        
+        if (emptyFields.length > 0) {
+            showStatus('error', 'Veuillez remplir tous les champs obligatoires.');
+            return;
+        }
+
+        if (formData.TravalieType === 'none' || formData.BudgetType === 'none' || formData.MethodAttribuation === 'none') {
+            showStatus('error', 'Veuillez sélectionner tous les types requis.');
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            const result = await newOperation(formData);
+            
+            if (result.operation) {
+                switch (result.operation.code) {
+                    case 0:
+                        showStatus('success', 'Opération ajoutée avec succès!', 0);
+                        // Reset form
+                        setFormData({
+                            NumOperation: '',
+                            ServContract: '',
+                            Objectif: '',
+                            TravalieType: 'none',
+                            BudgetType: 'none',
+                            MethodAttribuation: 'none',
+                            VisaNum: '',
+                            DateVisa: ''
+                        });
+                        setTypeDeTravau('none');
+                        setTypeDeBudget('none');
+                        setMethodAttribuation('none');
+                        setCurrentStep(1);
+                        break;
+                    case 1001:
+                        showStatus('warning', 'Cette opération existe déjà.', 1001);
+                        break;
+                    case 5000:
+                        showStatus('error', 'Une erreur générale est survenue. Veuillez réessayer.', 5000);
+                        break;
+                    default:
+                        showStatus('error', 'Réponse inattendue du serveur.', result.operation.code);
+                }
+            } else {
+                showStatus('error', 'Réponse inattendue du serveur.');
+            }
+        } catch (error) {
+            console.error('Submission error:', error);
+            showStatus('error', error.message || 'Erreur lors de l\'ajout de l\'opération.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return(
         <div className="NewOperation-container">
+            {/* Status Panel */}
+            {operationStatus.show && (
+                <div className={`status-panel status-${operationStatus.type}`}>
+                    <div className="status-content">
+                        <span className="status-icon">
+                            {operationStatus.type === 'success' && '✓'}
+                            {operationStatus.type === 'error' && '✗'}
+                            {operationStatus.type === 'warning' && '⚠'}
+                        </span>
+                        <span className="status-message">{operationStatus.message}</span>
+                        {operationStatus.code !== null && (
+                            <span className="status-code">Code: {operationStatus.code}</span>
+                        )}
+                    </div>
+                    <button 
+                        className="status-close"
+                        onClick={() => setOperationStatus(prev => ({ ...prev, show: false }))}
+                    >
+                        ×
+                    </button>
+                </div>
+            )}
+
             <div className="progress-steps">
                 <div className={`step ${currentStep >= 1 ? 'active' : ''}`}>
                     <div className="step-number">1</div>
@@ -45,14 +184,20 @@ function NewOperation(){
                         <label>Numéro d'opération</label>
                         <input 
                             type="text"
+                            name="NumOperation"
                             placeholder="Ex : 2024-00054"
+                            value={formData.NumOperation}
+                            onChange={handleInputChange}
                         />
                     </div>
                     <div className="form-group">
                         <label>Service de passation des marchés</label>
                         <input 
                             type="text"
+                            name="ServContract"
                             placeholder="Ex : Direction des Achats"
+                            value={formData.ServContract}
+                            onChange={handleInputChange}
                         />
                     </div>
                     <div className="form-group">
@@ -60,7 +205,10 @@ function NewOperation(){
                         <textarea 
                             rows='10' 
                             cols='50'
-                            placeholder="Ex : Amélioration de l’infrastructure électrique dans la région nord"
+                            name="Objectif"
+                            placeholder="Ex : Amélioration de l'infrastructure électrique dans la région nord"
+                            value={formData.Objectif}
+                            onChange={handleInputChange}
                         ></textarea>
                     </div>
                 </div>
@@ -77,8 +225,11 @@ function NewOperation(){
                                     type="radio"
                                     name="typeDeTravau"
                                     value="Travaux"
-                                    checked={typeDeTravau === 'Travaux'}
-                                    onChange={(e) => setTypeDeTravau(e.target.value)}
+                                    checked={formData.TravalieType === 'Travaux'}
+                                    onChange={(e) => {
+                                        setTypeDeTravau(e.target.value);
+                                        handleRadioChange('TravalieType', e.target.value);
+                                    }}
                                 />
                                 Travaux
                             </label>
@@ -87,8 +238,11 @@ function NewOperation(){
                                     type="radio"
                                     name="typeDeTravau"
                                     value="Prestations"
-                                    checked={typeDeTravau === 'Prestations'}
-                                    onChange={(e) => setTypeDeTravau(e.target.value)}
+                                    checked={formData.TravalieType === 'Prestations'}
+                                    onChange={(e) => {
+                                        setTypeDeTravau(e.target.value);
+                                        handleRadioChange('TravalieType', e.target.value);
+                                    }}
                                 />
                                 Prestations
                             </label>
@@ -97,8 +251,11 @@ function NewOperation(){
                                     type="radio"
                                     name="typeDeTravau"
                                     value="Equipement"
-                                    checked={typeDeTravau === 'Equipement'}
-                                    onChange={(e) => setTypeDeTravau(e.target.value)}
+                                    checked={formData.TravalieType === 'Equipement'}
+                                    onChange={(e) => {
+                                        setTypeDeTravau(e.target.value);
+                                        handleRadioChange('TravalieType', e.target.value);
+                                    }}
                                 />
                                 Equipement
                             </label>
@@ -107,8 +264,11 @@ function NewOperation(){
                                     type="radio"
                                     name="typeDeTravau"
                                     value="Etude"
-                                    checked={typeDeTravau === 'Etude'}
-                                    onChange={(e) => setTypeDeTravau(e.target.value)}
+                                    checked={formData.TravalieType === 'Etude'}
+                                    onChange={(e) => {
+                                        setTypeDeTravau(e.target.value);
+                                        handleRadioChange('TravalieType', e.target.value);
+                                    }}
                                 />
                                 Etude
                             </label>
@@ -122,8 +282,11 @@ function NewOperation(){
                                     type="radio"
                                     name="typeDeBudget"
                                     value="Equipement"
-                                    checked={typeDeBudget === 'Equipement'}
-                                    onChange={(e) => setTypeDeBudget(e.target.value)}
+                                    checked={formData.BudgetType === 'Equipement'}
+                                    onChange={(e) => {
+                                        setTypeDeBudget(e.target.value);
+                                        handleRadioChange('BudgetType', e.target.value);
+                                    }}
                                 />
                                 Equipement
                             </label>
@@ -132,8 +295,11 @@ function NewOperation(){
                                     type="radio"
                                     name="typeDeBudget"
                                     value="Fonctionnement"
-                                    checked={typeDeBudget === 'Fonctionnement'}
-                                    onChange={(e) => setTypeDeBudget(e.target.value)}
+                                    checked={formData.BudgetType === 'Fonctionnement'}
+                                    onChange={(e) => {
+                                        setTypeDeBudget(e.target.value);
+                                        handleRadioChange('BudgetType', e.target.value);
+                                    }}
                                 />
                                 Fonctionnement
                             </label>
@@ -142,8 +308,11 @@ function NewOperation(){
                                     type="radio"
                                     name="typeDeBudget"
                                     value="Opérations Hors Budget"
-                                    checked={typeDeBudget === 'Opérations Hors Budget'}
-                                    onChange={(e) => setTypeDeBudget(e.target.value)}
+                                    checked={formData.BudgetType === 'Opérations Hors Budget'}
+                                    onChange={(e) => {
+                                        setTypeDeBudget(e.target.value);
+                                        handleRadioChange('BudgetType', e.target.value);
+                                    }}
                                 />
                                 Opérations Hors Budget
                             </label>
@@ -157,8 +326,11 @@ function NewOperation(){
                                     type="radio"
                                     name="methodAttribuation"
                                     value="Appel d'Offres Ouvert"
-                                    checked={methodAttribuation === "Appel d'Offres Ouvert"}
-                                    onChange={(e) => setMethodAttribuation(e.target.value)}
+                                    checked={formData.MethodAttribuation === "Appel d'Offres Ouvert"}
+                                    onChange={(e) => {
+                                        setMethodAttribuation(e.target.value);
+                                        handleRadioChange('MethodAttribuation', e.target.value);
+                                    }}
                                 />
                                 Appel d'Offres Ouvert
                             </label>
@@ -167,8 +339,11 @@ function NewOperation(){
                                     type="radio"
                                     name="methodAttribuation"
                                     value="Appel d'Offres Restreint"
-                                    checked={methodAttribuation === "Appel d'Offres Restreint"}
-                                    onChange={(e) => setMethodAttribuation(e.target.value)}
+                                    checked={formData.MethodAttribuation === "Appel d'Offres Restreint"}
+                                    onChange={(e) => {
+                                        setMethodAttribuation(e.target.value);
+                                        handleRadioChange('MethodAttribuation', e.target.value);
+                                    }}
                                 />
                                 Appel d'Offres Restreint
                             </label>
@@ -184,14 +359,20 @@ function NewOperation(){
                         <label>Numéro de visa</label>
                         <input 
                             type="text"
+                            name="VisaNum"
                             placeholder="Ex : VISA-2024-00128" 
+                            value={formData.VisaNum}
+                            onChange={handleInputChange}
                         />
                     </div>
                     <div className="form-group">
                         <label>Date de visa</label>
                         <input 
                             type='date'
+                            name="DateVisa"
                             placeholder="jj/mm/aaaa"
+                            value={formData.DateVisa}
+                            onChange={handleInputChange}
                         />
                     </div>
                 </div>
@@ -199,16 +380,22 @@ function NewOperation(){
 
             <div className="navigation-buttons">
                 {currentStep > 1 && (
-                    <button className="nav-btn prev-btn" onClick={prevStep}>
+                    <button className="nav-btn prev-btn" onClick={prevStep} disabled={isSubmitting}>
                         Précédent
                     </button>
                 )}
                 {currentStep < 3 ? (
-                    <button className="nav-btn next-btn" onClick={nextStep}>
+                    <button className="nav-btn next-btn" onClick={nextStep} disabled={isSubmitting}>
                         Suivant
                     </button>
                 ) : (
-                    <button className="submit-btn">Soumettre</button>
+                    <button 
+                        className="submit-btn" 
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? 'Envoi en cours...' : 'Soumettre'}
+                    </button>
                 )}
             </div>
         </div>

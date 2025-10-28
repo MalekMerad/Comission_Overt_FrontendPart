@@ -1,6 +1,7 @@
 import '../../styles/pagesStyles/Administrator.css'
 import PlatformLogo from '../assets/Logo2.png'
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import menuStructure from '../components/MenuStructure';
 import componentMap from '../components/componentMenu';
 // Logos import
@@ -20,9 +21,15 @@ const sectionLogos = {
 };
 
 function Administrator(){
+    const navigate = useNavigate();
     const [activeSection, setActiveSection] = useState(null);
     const [activeSubMenu, setActiveSubMenu] = useState(null);
     const [selectedMenuItem, setSelectedMenuItem] = useState(null);
+
+    const handleLogout = () => {
+        TokenManager.clearTokens();
+        navigate('/login');
+    };
 
 
     const toggleSection = (section) => {
@@ -137,7 +144,7 @@ function Administrator(){
                 </nav>
 
                 <div className="SideBar-footer">
-                    <button className='SideBar-exitButton'>Déconnecter</button>
+                    <button className='SideBar-exitButton' onClick={handleLogout}>Déconnecter</button>
                 </div>
             </div>
             <div className="ComponentContent-container">

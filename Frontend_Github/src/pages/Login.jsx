@@ -1,11 +1,53 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { sectionVariant, cardVariant } from '../motion';
 import '../../styles/pagesStyles/login.css'
 import { useNavigate } from 'react-router-dom';
+import { login } from '../services/AuthServices/LoginService';
+
 
 function Login() {
   const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    rememberMe: false
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    if (error) setError('');
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      console.log(formData.email);
+      console.log(formData.password);
+      const response = await login(formData.email, formData.password);
+
+      console.log(response);
+      if (response.success) {
+        navigate(`/manage/${response.userId}`);
+      } else {
+        setError(response.message || 'Login failed');
+      }
+    } catch (err) {
+      setError(<span style={{ color: 'red', fontWeight: 'bold', fontSize: '0.8em' }}>An error has occured. Please try again.</span>);
+      console.error('Login error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <motion.div
@@ -36,6 +78,7 @@ function Login() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
+            onSubmit={handleSubmit}
           >
             <motion.div
               className="form-field"
@@ -46,8 +89,12 @@ function Login() {
               <label>Adresse e-mail</label>
               <input 
                 type="email" 
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
                 placeholder="Entrez votre e-mail"
                 className="login-input"
+                required
               />
             </motion.div>
             <motion.div
@@ -59,8 +106,12 @@ function Login() {
               <label>Mot de passe</label>
               <input 
                 type="password" 
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
                 placeholder="Entrez votre mot de passe"
                 className="login-input"
+                required
               />
             </motion.div>
             <motion.div
@@ -70,21 +121,40 @@ function Login() {
               transition={{ delay: 0.6, duration: 0.4 }}
             >
               <label className="remember-me">
-                <input type="checkbox" />
+                <input 
+                  type="checkbox" 
+                  name="rememberMe"
+                  checked={formData.rememberMe}
+                  onChange={handleInputChange}
+                />
                 Se souvenir de moi
               </label>
               <a href="#" className="forgot-password">Mot de passe oublié ?</a>
             </motion.div>
+            
+            {/* Error Message */}
+            {error && (
+              <motion.div
+                className="error-message"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {error}
+              </motion.div>
+            )}
+            
             <motion.button
               type="submit"
               className="login-button"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.4 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: isLoading ? 1 : 1.02 }}
+              whileTap={{ scale: isLoading ? 1 : 0.98 }}
+              disabled={isLoading}
             >
-              Se connecter
+              {isLoading ? 'Connexion...' : 'Se connecter'}
             </motion.button>
           </motion.form>
         </motion.div>

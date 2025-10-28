@@ -340,3 +340,105 @@ body, html {
     }
 }
 
+/* Status Panel Styles */
+.status-panel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    min-width: 300px;
+    max-width: 400px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: slideIn 0.3s ease-out;
+    border-left: 4px solid;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.status-success {
+    background: var(--white-pure);
+    border-left-color: #4bb543;
+    color: #2d5016;
+}
+
+.status-error {
+    background: var(--white-pure);
+    border-left-color: #dc3545;
+    color: #721c24;
+}
+
+.status-warning {
+    background: var(--white-pure);
+    border-left-color: #ffc107;
+    color: #856404;
+}
+
+.status-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.status-icon {
+    font-weight: bold;
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+.status-message {
+    flex: 1;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.status-code {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-left: 8px;
+}
+
+.status-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.status-close:hover {
+    opacity: 1;
+}
+
+@media (max-width: 480px) {
+    .status-panel {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        min-width: unset;
+        max-width: unset;
+    }
+}

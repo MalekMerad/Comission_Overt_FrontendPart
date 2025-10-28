@@ -10,6 +10,7 @@ import Login from './pages/Login'
 import NotFound from './pages/NotFound'
 import Administrator from './pages/Administrator'
 
+
 function App() {
 
   const Layout = () => (
@@ -33,8 +34,11 @@ function App() {
       element : <Layout/>,
       children : [
         {path : '/',element : <Home/>},
-        {path : '/manage',element : <Administrator/>}
       ]
+    },
+    {
+      path : '/manage/:id',
+      element : <Administrator/>
     },
     {
       element : <AuthLayout/>,
