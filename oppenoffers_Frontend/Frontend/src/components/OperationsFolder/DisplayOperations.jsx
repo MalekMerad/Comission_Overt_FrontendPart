@@ -9,6 +9,8 @@ import { useToast } from '../../hooks/useToast';
 import { useDisclosure } from '../../hooks/useDisclosure';
 import DeleteConfirmation from '../DeleteConfirmation';
 import { useAuth } from '../../context/AuthContext';
+import TextInput from '../FormElements/TextInput';
+import TextArea from '../FormElements/TextArea';
 const getBudgetTypeLabel = (code) => {
     switch (code) {
         case 1: return "Equipement";
@@ -53,7 +55,7 @@ const formatDate = (dateString) => {
 
 function DisplayOperations() {
     const { isOpen, open, close } = useDisclosure();
-    const { user } = useAuth(); // Get user from auth context
+
     const { showToast } = useToast();
     const { user } = useAuth();
     const [operations, setOperations] = useState([]);
@@ -304,16 +306,14 @@ function DisplayOperations() {
                                     </div>
                                     <div className="modal-content">
                                         <div className="detail-row">
-                                            <label>Numéro :</label>
-                                            <input type="text" value={panelState.NumeroDeOperation} readOnly />
+                                            <TextInput label="Numéro :" value={panelState.NumeroDeOperation} readOnly />
                                         </div>
                                         <div className="detail-row">
-                                            <label>Service :</label>
-                                            <input type="text" value={panelState.ServiceDeContract} readOnly />
+                                            <TextInput label="Service :" value={panelState.ServiceDeContract} readOnly />
                                         </div>
                                         <div className="detail-row">
-                                            <label>Objectif :</label>
-                                            <textarea
+                                            <TextArea
+                                                label="Objectif :"
                                                 value={panelState.Objectife}
                                                 onChange={e => handlePanelChange('Objectife', e.target.value)}
                                                 rows="5"
@@ -353,16 +353,13 @@ function DisplayOperations() {
                                             </select>
                                         </div>
                                         <div className="detail-row">
-                                            <label>État :</label>
-                                            <input type="text" value={getStateLabel(panelState.State)} readOnly />
+                                            <TextInput label="État :" value={getStateLabel(panelState.State)} readOnly />
                                         </div>
                                         <div className="detail-row">
-                                            <label>N° Visa :</label>
-                                            <input type="text" value={panelState.VisaNumber} readOnly />
+                                            <TextInput label="N° Visa :" value={panelState.VisaNumber} readOnly />
                                         </div>
                                         <div className="detail-row">
-                                            <label>Date Visa :</label>
-                                            <input type="text" value={panelState.VisaDate} readOnly />
+                                            <TextInput label="Date Visa :" value={panelState.VisaDate} readOnly />
                                         </div>
 
                                         <div className="modal-actions">

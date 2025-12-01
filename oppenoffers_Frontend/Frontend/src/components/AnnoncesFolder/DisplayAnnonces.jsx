@@ -12,6 +12,7 @@ import { useToast } from "../../hooks/useToast";
 import { useDisclosure } from "../../hooks/useDisclosure";
 import { useAuth } from "../../context/AuthContext";
 import DeleteConfirmation from "../DeleteConfirmation";
+import TextInput from "../FormElements/TextInput";
 
 function DisplayAnnonces() {
   const { showToast } = useToast();
@@ -169,55 +170,45 @@ function DisplayAnnonces() {
             <h2>Détails et modification de l’annonce</h2>
 
             <div className="modal-form-grid">
-              <label>
-                Numéro :
-                <input
-                  type="text"
-                  name="Numero"
-                  value={editAnnonce.Numero}
-                  disabled
-                />
-              </label>
+              <TextInput
+                label="Numéro :"
+                type="text"
+                name="Numero"
+                value={editAnnonce.Numero}
+                disabled
+              />
 
-              <label>
-                Journal :
-                <input
-                  type="text"
-                  name="Journal"
-                  value={editAnnonce.Journal}
-                  onChange={handleEditChange}
-                />
-              </label>
+              <TextInput
+                label="Journal :"
+                type="text"
+                name="Journal"
+                value={editAnnonce.Journal}
+                onChange={handleEditChange}
+              />
 
-              <label>
-                Date de publication :
-                <input
-                  type="date"
-                  name="Date_Publication"
-                  value={editAnnonce.Date_Publication?.slice(0, 10)}
-                  onChange={handleEditChange}
-                />
-              </label>
+              <TextInput
+                label="Date de publication :"
+                type="date"
+                name="Date_Publication"
+                value={editAnnonce.Date_Publication?.slice(0, 10)}
+                onChange={handleEditChange}
+              />
 
-              <label>
-                Date d’ouverture :
-                <input
-                  type="date"
-                  name="Date_Overture"
-                  value={editAnnonce.Date_Overture?.slice(0, 10)}
-                  onChange={handleEditChange}
-                />
-              </label>
+              <TextInput
+                label="Date d’ouverture :"
+                type="date"
+                name="Date_Overture"
+                value={editAnnonce.Date_Overture?.slice(0, 10)}
+                onChange={handleEditChange}
+              />
 
-              <label>
-                Délai (jours) :
-                <input
-                  type="number"
-                  name="Delai"
-                  value={editAnnonce.Delai}
-                  onChange={handleEditChange}
-                />
-              </label>
+              <TextInput
+                label="Délai (jours) :"
+                type="number"
+                name="Delai"
+                value={editAnnonce.Delai}
+                onChange={handleEditChange}
+              />
             </div>
 
             <div className="modal-buttons">

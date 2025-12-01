@@ -10,6 +10,8 @@ import { useToast } from "../../hooks/useToast";
 import { useDisclosure } from "../../hooks/useDisclosure";
 import DeleteConfirmation from "../DeleteConfirmation";
 import { useAuth } from "../../context/AuthContext";
+import TextInput from "../FormElements/TextInput";
+import TextArea from "../FormElements/TextArea";
 
 function groupLotsByOperation(lots = []) {
     const operationsMap = {};
@@ -251,24 +253,20 @@ export default function DisplayLots() {
                     >
                         <h2>Détails du lot</h2>
                         <div className="lot-details-grid">
-                            <label>
-                                <span>Numéro du lot</span>
-                                <input
-                                    value={selectedLot?.numeroLot ?? "—"}
-                                    readOnly
-                                />
-                            </label>
-                            <label>
-                                <span>Désignation</span>
-                                <textarea
-                                    value={newDesignation}
-                                    onChange={(event) => {
-                                        setNewDesignation(event.target.value);
-                                    }}
-                                    cols="10"
-                                    rows="5"
-                                />
-                            </label>
+                            <TextInput
+                                label="Numéro du lot"
+                                value={selectedLot?.numeroLot ?? "—"}
+                                readOnly
+                            />
+                            <TextArea
+                                label="Désignation"
+                                value={newDesignation}
+                                onChange={(event) => {
+                                    setNewDesignation(event.target.value);
+                                }}
+                                cols="10"
+                                rows="5"
+                            />
                         </div>
 
                         <div className="lot-details-buttons">

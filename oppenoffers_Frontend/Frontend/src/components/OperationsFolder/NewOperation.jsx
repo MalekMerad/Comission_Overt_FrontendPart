@@ -3,6 +3,8 @@ import '../../../styles/componentsStyles/NewOperation.css';
 import { newOperation } from '../../services/operationService';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from "../../context/AuthContext";
+import TextInput from "../FormElements/TextInput";
+import TextArea from "../FormElements/TextArea";
 
 function NewOperation() {
     const { showToast } = useToast();
@@ -145,37 +147,27 @@ function NewOperation() {
             {currentStep === 1 && (
                 <div className="informations-container step-content">
                     <h1>Information de base</h1>
-                    <div className="form-group">
-                        <label>Numéro d'opération</label>
-                        <input
-                            type="text"
+                        <TextInput
+                            label="Numéro d'opération"
                             name="NumOperation"
                             placeholder="Ex : 2024-00054"
                             value={formData.NumOperation}
                             onChange={handleInputChange}
                         />
-                    </div>
-                    <div className="form-group">
-                        <label>Service de passation des marchés</label>
-                        <input
-                            type="text"
+                        <TextInput
+                            label="Service de passation des marchés"
                             name="ServContract"
                             placeholder="Ex : Direction des Achats"
                             value={formData.ServContract}
                             onChange={handleInputChange}
                         />
-                    </div>
-                    <div className="form-group">
-                        <label>Objectif de l'opération</label>
-                        <textarea
-                            rows='10'
-                            cols='50'
+                        <TextArea
+                            label="Objectif de l'opération"
                             name="Objectif"
                             placeholder="Ex : Amélioration de l'infrastructure électrique dans la région nord"
                             value={formData.Objectif}
                             onChange={handleInputChange}
-                        ></textarea>
-                    </div>
+                        />
                 </div>
             )}
 
@@ -320,26 +312,21 @@ function NewOperation() {
             {currentStep === 3 && (
                 <div className="informations-container step-content">
                     <h1>Marché et Visa</h1>
-                    <div className="form-group">
-                        <label>Numéro de visa</label>
-                        <input
-                            type="text"
+                        <TextInput
+                            label="Numéro de visa"
                             name="VisaNum"
                             placeholder="Ex : VISA-2024-00128"
                             value={formData.VisaNum}
                             onChange={handleInputChange}
                         />
-                    </div>
-                    <div className="form-group">
-                        <label>Date de visa</label>
-                        <input
+                        <TextInput
+                            label="Date de visa"
                             type='date'
                             name="DateVisa"
                             placeholder="jj/mm/aaaa"
                             value={formData.DateVisa}
                             onChange={handleInputChange}
                         />
-                    </div>
                 </div>
             )}
 

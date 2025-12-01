@@ -1,5 +1,6 @@
 import React from "react";
 import searchIcon from "../assets/Search.jpg";
+import TextInput from "./FormElements/TextInput";
 
 
 const SearchBar = ({
@@ -13,7 +14,7 @@ const SearchBar = ({
       {title && <h3 className="search-title">{title}</h3>}
 
       <div className="search-wrapper">
-        <input
+        <TextInput
           type="text"
           placeholder={placeholder}
           value={searchTerm}

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { sectionVariant, cardVariant } from '../motion';
-import '../../styles/pagesStyles/login.css'
+import '../../styles/pagesStyles/login.css';
 import { useNavigate } from 'react-router-dom';
 import { useLogin } from '../hooks/useLogin';
 import { useAuth } from '../context/AuthContext';
+import TextInput from '../components/FormElements/TextInput';
+
 
 function Login() {
   const navigate = useNavigate();
@@ -89,15 +91,14 @@ animate="visible"
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4, duration: 0.4 }}
             >
-              <label>Adresse e-mail</label>
-              <input 
-                type="email" 
+              <TextInput
+                type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder="Entrez votre e-mail"
-                className="login-input"
                 required
+                label="Adresse e-mail"
               />
             </motion.div>
             <motion.div
@@ -106,15 +107,14 @@ animate="visible"
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5, duration: 0.4 }}
             >
-              <label>Mot de passe</label>
-              <input 
-                type="password" 
+              <TextInput
+                type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
                 placeholder="Entrez votre mot de passe"
-                className="login-input"
                 required
+                label="Mot de passe"
               />
             </motion.div>
             <motion.div

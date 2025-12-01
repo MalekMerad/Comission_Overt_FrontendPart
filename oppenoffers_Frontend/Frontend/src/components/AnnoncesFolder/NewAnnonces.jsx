@@ -2,6 +2,7 @@ import { useState } from "react";
 import '../../../styles/componentsStyles/ALLOperations.css';
 import { newAnnonce } from '../../services/annonceService';
 import { useToast } from '../../hooks/useToast';
+import TextInput from "../FormElements/TextInput";
 
 function NewAnnonces({ operationId, adminId, onClose, onConfirm }) {
     const { showToast } = useToast();
@@ -88,8 +89,8 @@ function NewAnnonces({ operationId, adminId, onClose, onConfirm }) {
                 <div className="modal-content">
 
                     <div className="detail-row">
-                        <label>Numéro de l'annonce :</label>
-                        <input
+                        <TextInput
+                            label="Numéro de l'annonce :"
                             type="text"
                             name="Numero"
                             placeholder="Ex : AN-2025-001"
@@ -100,8 +101,8 @@ function NewAnnonces({ operationId, adminId, onClose, onConfirm }) {
                     </div>
 
                     <div className="detail-row">
-                        <label>Date de publication :</label>
-                        <input
+                        <TextInput
+                            label="Date de publication :"
                             type="date"
                             name="Date_Publication"
                             value={formData.Date_Publication}
@@ -111,8 +112,8 @@ function NewAnnonces({ operationId, adminId, onClose, onConfirm }) {
                     </div>
 
                     <div className="detail-row">
-                        <label>Journal :</label>
-                        <input
+                        <TextInput
+                            label="Journal :"
                             type="text"
                             name="Journal"
                             placeholder="Ex : El Moudjahid"
@@ -123,8 +124,8 @@ function NewAnnonces({ operationId, adminId, onClose, onConfirm }) {
                     </div>
 
                     <div className="detail-row">
-                        <label>Délai (jours) :</label>
-                        <input
+                        <TextInput
+                            label="Délai (jours) :"
                             type="number"
                             name="Delai"
                             placeholder="Ex : 15"
@@ -135,8 +136,8 @@ function NewAnnonces({ operationId, adminId, onClose, onConfirm }) {
                     </div>
 
                     <div className="detail-row">
-                        <label>Date d’ouverture :</label>
-                        <input
+                        <TextInput
+                            label="Date d’ouverture :"
                             type="date"
                             name="Date_Overture"
                             value={formData.Date_Overture}

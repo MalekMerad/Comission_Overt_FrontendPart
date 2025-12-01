@@ -2,6 +2,8 @@ import { useState } from 'react';
 import '../../../styles/componentsStyles/ALLOperations.css';
 import { addNewLotService } from '../../services/lotService';
 import { useToast } from '../../hooks/useToast';
+import TextInput from '../FormElements/TextInput';
+import TextArea from '../FormElements/TextArea';
 
 function NewLot({ operationId, adminId, onClose, onConfirm }) {
     const { showToast } = useToast();
@@ -59,8 +61,8 @@ function NewLot({ operationId, adminId, onClose, onConfirm }) {
                 </div>
                 <div className="modal-content">
                     <div className="detail-row">
-                        <label>Numéro de Lot :</label>
-                        <input
+                        <TextInput
+                            label="Numéro de Lot :"
                             type='text'
                             placeholder="Ex : 2024-00054"
                             value={numeroLot}
@@ -69,14 +71,14 @@ function NewLot({ operationId, adminId, onClose, onConfirm }) {
                         />
                     </div>
                     <div className="detail-row">
-                        <label>Designation :</label>
-                        <textarea
+                        <TextArea
+                            label="Designation :"
                             rows='6'
                             placeholder="Ex : Amélioration de l'infrastructure électrique dans la région nord"
                             value={designation}
                             onChange={e => setDesignation(e.target.value)}
                             disabled={isSubmitting}
-                        ></textarea>
+                        />
                     </div>
                     <div className="modal-actions">
                         <button
