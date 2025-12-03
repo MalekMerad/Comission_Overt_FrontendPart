@@ -25,12 +25,12 @@ function DisplayAnnonces() {
   const [editAnnonce, setEditAnnonce] = useState(null);
   const [annonceToDelete, setAnnonceToDelete] = useState(null);
 
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await getAllAnnonces(user?.userId);
         setAnnonces(data || []);
-        showToast(`${data.length} annonce(s) chargée(s) avec succès ✅`, 'success');
       } catch (error) {
         console.error("Erreur:", error);
         showToast("❌ Impossible de charger les annonces.", 'error');
@@ -57,7 +57,7 @@ function DisplayAnnonces() {
       const result = await deleteAnnonce(annonceToDelete.Id || annonceToDelete.id || annonceToDelete.Id_Annonce || annonceToDelete.id_annonce);
       if (result.success) {
         setAnnonces(annonces.filter(a => (a.Id || a.id || a.Id_Annonce || a.id_annonce) !== (annonceToDelete.Id || annonceToDelete.id || annonceToDelete.Id_Annonce || annonceToDelete.id_annonce)));
-        showToast(`🗑️ Annonce ${annonceToDelete.Numero} supprimée avec succès !`, 'success');
+        showToast(`Annonce ${annonceToDelete.Numero} supprimée avec succès !`, 'success');
       } else {
         throw new Error(result.message || "Erreur lors de la suppression de l'annonce");
       }
@@ -74,6 +74,11 @@ function DisplayAnnonces() {
     setEditAnnonce({ ...editAnnonce, [name]: value });
   };
 
+  const handlePanelCancel = () => {
+    setSelectedAnnonce(null);
+    setEditAnnonce(null);
+  };
+
   const handleUpdate = async () => {
     try {
       const result = await updateAnnonce(editAnnonce);
@@ -82,13 +87,13 @@ function DisplayAnnonces() {
         setAnnonces((prev) =>
           prev.map((a) => (a.Numero === editAnnonce.Numero ? editAnnonce : a))
         );
-        showToast(`✅ Annonce ${editAnnonce.Numero} mise à jour avec succès !`, 'success');
+        showToast(`Annonce ${editAnnonce.Numero} mise à jour avec succès !`, 'success');
         setSelectedAnnonce(null);
       } else {
-        showToast(`⚠️ Erreur lors de la mise à jour : ${result.message || "Réponse invalide du serveur."}`, 'error');
+        showToast(`Erreur lors de la mise à jour : ${result.message || "Réponse invalide du serveur."}`, 'error');
       }
     } catch (error) {
-      showToast("❌ Une erreur est survenue lors de la mise à jour.", 'error');
+      showToast("Une erreur est survenue lors de la mise à jour.", 'error');
     }
   };
 
@@ -167,8 +172,10 @@ function DisplayAnnonces() {
       {selectedAnnonce && (
         <div className="modal-overlay-large">
           <div className="modal-large-content">
-            <h2>Détails et modification de l’annonce</h2>
-
+          <div className="modal-header">
+              <h3>Détails de l'annonce</h3>
+              <button className="modal-close-btn" onClick={handlePanelCancel}>✕</button>
+          </div>
             <div className="modal-form-grid">
               <TextInput
                 label="Numéro :"
@@ -192,6 +199,7 @@ function DisplayAnnonces() {
                 name="Date_Publication"
                 value={editAnnonce.Date_Publication?.slice(0, 10)}
                 onChange={handleEditChange}
+                className="text-input"
               />
 
               <TextInput
@@ -213,11 +221,11 @@ function DisplayAnnonces() {
 
             <div className="modal-buttons">
               <button className="save-btn" onClick={handleUpdate}>
-                💾 Enregistrer
+                Enregistrer
               </button>
               <button
                 className="cancel-btn"
-                onClick={() => setSelectedAnnonce(null)}
+                onClick={handlePanelCancel}
               >
                 Fermer
               </button>
