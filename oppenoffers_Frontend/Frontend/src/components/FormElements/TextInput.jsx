@@ -1,7 +1,17 @@
 import React from 'react';
 import './../../../styles/componentsStyles/TextInput.css';
 
-const TextInput = ({ label, name, value, onChange, placeholder, type = 'text', required = false }) => {
+
+const TextInput = ({
+  label,
+  name,
+  value,
+  onChange,
+  placeholder,
+  type = 'text',
+  required = false,
+  ...rest
+}) => {
   return (
     <div className="form-group">
       {label && <label htmlFor={name}>{label}</label>}
@@ -14,6 +24,7 @@ const TextInput = ({ label, name, value, onChange, placeholder, type = 'text', r
         placeholder={placeholder}
         required={required}
         className="text-input"
+        {...rest}
       />
     </div>
   );

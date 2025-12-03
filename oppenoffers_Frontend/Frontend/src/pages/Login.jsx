@@ -20,15 +20,6 @@ function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
-{/**
-    useEffect(() => {
-    if (user) {
-      navigate('/');
-    }
-  }, [user, navigate]);
-   */}
-
-
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -135,7 +126,6 @@ animate="visible"
               <a href="#" className="forgot-password">Mot de passe oublié ?</a>
             </motion.div>
             
-            {/* Error Message */}
             {error && (
               <motion.div
                 className="error-message"

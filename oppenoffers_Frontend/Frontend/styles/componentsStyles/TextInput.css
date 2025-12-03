@@ -1,29 +1,83 @@
 .form-group {
-    margin-bottom: 15px;
-  }
-  
-  .form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-    color: var(--purple-dark);
-  }
-  
-  .text-input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    transition: border-color 0.3s;
-  }
-  
-  .text-input:focus {
-    border-color: var(--purple-main);
-    outline: none;
-  }
-  
-  .text-input::placeholder {
-    color: #999;
-  }
-  
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--purple-dark);
+}
+
+.text-input,
+input[type="email"].text-input,
+input[type="date"].text-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  transition: border-color 0.3s;
+  background: #fff;
+  font-size: 1rem;
+}
+
+.text-input:focus,
+input[type="email"].text-input:focus,
+input[type="date"].text-input:focus {
+  border-color: var(--purple-main);
+  outline: none;
+}
+
+.text-input::placeholder,
+input[type="email"].text-input::placeholder {
+  color: #999;
+  opacity: 1;
+}
+
+input[type="date"].text-input {
+  min-height: 40px;
+  color: #222;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  font-family: inherit;
+}
+
+input[type="date"].text-input::-webkit-input-placeholder {
+  color: #999;
+}
+input[type="date"].text-input::-webkit-datetime-edit,
+input[type="date"].text-input::-webkit-datetime-edit-fields-wrapper,
+input[type="date"].text-input::-webkit-datetime-edit-text,
+input[type="date"].text-input::-webkit-datetime-edit-month-field,
+input[type="date"].text-input::-webkit-datetime-edit-day-field,
+input[type="date"].text-input::-webkit-datetime-edit-year-field {
+  color: #999;
+}
+
+input[type="date"].text-input::-webkit-calendar-picker-indicator {
+  opacity: 0.7;
+  filter: invert(0.5);
+  cursor: pointer;
+}
+
+input[type="date"].text-input::-webkit-inner-spin-button,
+input[type="date"].text-input::-webkit-clear-button {
+  display: none;
+}
+
+
+input[type="date"].text-input::-moz-placeholder {
+  color: #999;
+  opacity: 1;
+}
+input[type="date"].text-input:-moz-ui-invalid {
+  box-shadow: none;
+}
+
+input[type="date"].text-input:focus {
+  border-color: var(--purple-main);
+  outline: none;
+}
+
