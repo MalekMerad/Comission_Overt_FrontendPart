@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Plus, UserPlus, X, Search } from 'lucide-react';
 import { LotsSubSection } from './LotsSubSection';
 import { AnnouncementSubSection } from './AnnouncementSubSection';
+import OperationDetails from './detailsModal/OperationDetails';
 import { useAuth } from '../context/AuthContext';
 import { getOperations, newOperation, deleteoperation } from '../services/operationService';
 import { getAllSuppliers, newSupplier as addNewSupplierService } from '../services/supplierService';
+
 import { OperationsTable } from './tables/OperationsTable';
 import { FormModal } from './modals/FormModal';
 import { NewOperationForm } from './modals/NewOperationForm';
@@ -25,10 +27,13 @@ export function OperationsSection() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showOperationModal, setShowOperationModal] = useState(false);
-  const [showSupplierModal, setShowSupplierModal] = useState(false);
 
+  const [showSupplierModal, setShowSupplierModal] = useState(false);
+  const [showOperationDetailsModal, setShowOperationDetailsModal] = useState(false);
   const [showNewSupplierModal, setShowNewSupplierModal] = useState(false);
   const [selectedOperationForSupplier, setSelectedOperationForSupplier] = useState(null);
+
+  const [showOperationDetails, setShowOperationDetails] = useState(null);
   const navigate = useNavigate();
 
   const [newOperationData, setNewOperationData] = useState({
@@ -228,6 +233,11 @@ const handleAddOperation = async () => {
     setShowSupplierModal(true); 
   };
 
+  const handleOpenDetailsModal = (operation) =>{
+    setShowOperationDetails(operation);
+    setShowOperationDetailsModal(true);
+  }
+
   const handleAssignSupplier = async (supplierId) => {
     if (selectedOperationForSupplier) {
       try {
@@ -360,7 +370,7 @@ const handleAddOperation = async () => {
           </div>
 
           <div className="p-6">
-            <OperationsTable operations={filteredOperations} handleOpenSupplierModal={handleOpenSupplierModal} handleDeleteOperation={handleDeleteOperation} />
+            <OperationsTable operations={filteredOperations} handleOpenSupplierModal={handleOpenSupplierModal} handleDeleteOperation={handleDeleteOperation} handleOpenDetailsModal={handleOpenDetailsModal} />
           </div>
         </section>
 
@@ -369,18 +379,29 @@ const handleAddOperation = async () => {
         <AnnouncementSubSection operations={operations} />
       </div>
 
-        <FormModal
+      <FormModal
             isOpen={showOperationModal}
             onClose={() => setShowOperationModal(false)}
             onSave={handleAddOperation}
             title="Nouvelle Opération"
             saveText="Ajouter l'opération"
             isLoading={isSubmitting}
+
         >
             <NewOperationForm newOperationData={newOperationData} setNewOperationData={setNewOperationData} />
         </FormModal>
+        
+      {showOperationDetails && (
+        <FormModal
+          isOpen={showOperationDetailsModal}
+          onClose={() => setShowOperationDetailsModal(false)}
+          title="Détails de l'opération"
+          saveText="" 
+        >
+          <OperationDetails operation={showOperationDetails} />
+        </FormModal>
+      )}
 
-      {/* Supplier Selection Modal */}
       {showSupplierModal && (
         <div className="fixed inset-0 bg-white/120 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded border-2 border-gray-400 w-full max-w-6xl max-h-[90vh] overflow-y-auto">

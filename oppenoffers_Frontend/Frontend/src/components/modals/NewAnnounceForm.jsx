@@ -1,25 +1,25 @@
 import { useEffect, useRef } from "react";
 
 function addDays(baseDate, days) {
-    if (!baseDate || isNaN(days)) return "";
+    if (!baseDate || days === undefined || days === null || days === "") return "";
     const date = new Date(baseDate);
+    if (isNaN(date.getTime())) return "";
     date.setDate(date.getDate() + Number(days));
     return date.toISOString().split("T")[0];
 }
-
-export function NewAnnounceForm({ newAnnouncement, setNewAnnouncement, operations }) {
+export function NewAnnounceForm({ newAnnouncement, setNewAnnouncement, operations, isEditing }) {
     const lastAutoUpdateRef = useRef(null);
 
     useEffect(() => {
         const { datePublication, delai, dateOuverture } = newAnnouncement;
+    
         if (datePublication && delai && /^\d+$/.test(delai)) {
             const calculated = addDays(datePublication, delai);
-            if (!dateOuverture || dateOuverture === lastAutoUpdateRef.current) {
                 setNewAnnouncement(n => {
                     lastAutoUpdateRef.current = calculated;
                     return { ...n, dateOuverture: calculated };
                 });
-            }
+            
         }
     }, [newAnnouncement.datePublication, newAnnouncement.delai]);
 
@@ -31,6 +31,7 @@ export function NewAnnounceForm({ newAnnouncement, setNewAnnouncement, operation
                     value={newAnnouncement.operationId}
                     onChange={e => setNewAnnouncement({ ...newAnnouncement, operationId: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded"
+                    disabled={!!isEditing}
                 >
                     <option value="" disabled>Sélectionner une opération</option>
                     {operations.map((op) => (
@@ -48,8 +49,9 @@ export function NewAnnounceForm({ newAnnouncement, setNewAnnouncement, operation
                         type="text"
                         value={newAnnouncement.numero}
                         onChange={e => setNewAnnouncement({ ...newAnnouncement, numero: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
+                        className={`w-full px-3 py-2 border border-gray-300 rounded ${isEditing ? 'cursor-default' : ''}`}
                         placeholder="Ex: 2024/01"
+                        readOnly={!!isEditing}
                     />
                 </div>
                 <div>

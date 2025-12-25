@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useAuth } from '../context/AuthContext';
 import { getAllSuppliers, newSupplier as newSupplierService, updateSupplier as updateSupplierService, deleteSupplier as deleteSupplierService } from '../services/supplierService';
 import { SuppliersTable } from './tables/SuppliersTable';
@@ -27,6 +27,7 @@ export function SuppliersSection() {
     Rib: "",
     Ai: "",
   });
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchSuppliers = async () => {
@@ -46,6 +47,16 @@ export function SuppliersSection() {
     };
     fetchSuppliers();
   }, [user]);
+
+  // Filter suppliers by Raison sociale (NomSociete), phone (Telephone), or journal (Email)
+  const filteredSuppliers = suppliers.filter(supplier => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return true;
+    const nomSociete = (supplier.NomSociete || '').toLowerCase();
+    const telephone = (supplier.Telephone || '').toLowerCase();
+    const journal = (supplier.Email || '').toLowerCase(); // Assuming journal means Email
+    return nomSociete.includes(term) || telephone.includes(term) || journal.includes(term);
+  });
 
   const handleModalOpen = (supplier = null) => {
     if (supplier) {
@@ -86,36 +97,33 @@ export function SuppliersSection() {
     setEditingSupplier(null);
   };
 
+  const handleSaveSupplier = async () => {
+    if (!newSupplier || !newSupplier.Id) return;
 
+    try {
+      const result = await updateSupplierService(newSupplier);
 
-const handleSaveSupplier = async () => {
-  if (!newSupplier || !newSupplier.Id) return;
+      if (result && (result.success === true || result.code === 0)) {
+        setSuppliers(prevSuppliers =>
+          prevSuppliers.map(s =>
+            s.Id === newSupplier.Id ? { ...s, ...newSupplier } : s
+          )
+        );
 
-  try {
-    const result = await updateSupplierService(newSupplier);
-
-    if (result && (result.success === true || result.code === 0)) {
-      
-      setSuppliers(prevSuppliers =>
-        prevSuppliers.map(s =>
-          s.Id === newSupplier.Id ? { ...s, ...newSupplier } : s
-        )
-      );
-
-      showToast('Fournisseur mis à jour avec succès.', 'success');
-      handleModalClose();
-    } else {
-      console.error("Failed to update supplier", result);
-      const message = result?.code === 5000 
-        ? "Erreur serveur (vérifiez la longueur des champs)." 
-        : "Erreur lors de la mise à jour.";
-      showToast(message, 'error');
+        showToast('Fournisseur mis à jour avec succès.', 'success');
+        handleModalClose();
+      } else {
+        console.error("Failed to update supplier", result);
+        const message = result?.code === 5000
+          ? "Erreur serveur (vérifiez la longueur des champs)."
+          : "Erreur lors de la mise à jour.";
+        showToast(message, 'error');
+      }
+    } catch (error) {
+      console.error("Error in handleSaveSupplier:", error);
+      showToast('Erreur de connexion au serveur.', 'error');
     }
-  } catch (error) {
-    console.error("Error in handleSaveSupplier:", error);
-    showToast('Erreur de connexion au serveur.', 'error');
-  }
-};
+  };
 
   const handleDeleteSupplier = async (id) => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer ce fournisseur ?")) {
@@ -138,17 +146,24 @@ const handleSaveSupplier = async () => {
         <section className="bg-white border border-gray-300 rounded">
           <div className="border-b border-gray-300 bg-gray-100 px-6 py-4 flex justify-between items-center">
             <h2 className="text-lg">Fournisseurs</h2>
-            <button
-              onClick={() => handleModalOpen()}
-              className="px-4 py-2 bg-slate-700 text-white rounded hover:bg-slate-800 flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Nouveau fournisseur
-            </button>
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Téléphone, journal ou Raison sociale"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded w-64"
+              />
+            </div>
           </div>
 
           <div className="p-6">
-            <SuppliersTable suppliers={suppliers} handleModalOpen={handleModalOpen} handleDeleteSupplier={handleDeleteSupplier} />
+            <SuppliersTable
+              suppliers={filteredSuppliers}
+              handleModalOpen={handleModalOpen}
+              handleDeleteSupplier={handleDeleteSupplier}
+            />
           </div>
         </section>
       </div>

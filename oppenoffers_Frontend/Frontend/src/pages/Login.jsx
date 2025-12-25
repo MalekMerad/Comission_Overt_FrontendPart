@@ -41,7 +41,7 @@ function Login() {
 
   useEffect(() => {
     if (loginError) {
-      setError(<span style={{ color: 'red', fontWeight: 'bold', fontSize: '0.8em' }}>{loginError}</span>);
+      setError(<span style={{ color: 'red', fontWeight: 'bold', fontSize: '0.8em' }}>Email ou mot de pass incorrect</span>);
     }
   }, [loginError]);
 

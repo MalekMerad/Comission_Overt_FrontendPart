@@ -31,7 +31,6 @@ export function AnnouncementSubSection({ operations }) {
       setLoading(true);
       try {
         const response = await getAllAnnonces(currentAdmin);
-        // Ensure data is an array
         const data = response.annonces || response.data || response; 
         setAnnouncements(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -206,6 +205,7 @@ export function AnnouncementSubSection({ operations }) {
             newAnnouncement={newAnnouncement} 
             setNewAnnouncement={setNewAnnouncement} 
             operations={operations} 
+            isEditing={editingAnnouncement}
         />
       </FormModal>
     </>
