@@ -1,7 +1,7 @@
 import React from "react";
 
 export function NewOperationForm({ newOperationData, setNewOperationData }) {
-    // Set default values when component mounts
+   
     React.useEffect(() => {
         const defaults = {
             TravalieType: 'Travaux',
