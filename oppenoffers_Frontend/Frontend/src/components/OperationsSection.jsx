@@ -72,35 +72,37 @@ export function OperationsSection() {
     try {
         setLoading(true);
         const adminID = user?.userId || user?.userid;
-        
+
         if (!adminID) {
             showToast('Session expirée. Veuillez vous reconnecter.', 'error');
             return;
         }
         const operationsData = await getOperations(adminID);
+
         const mappedOperations = operationsData
             .filter(op => op.State === 1)
-            .map(op => ({
+            .map(op => {
+                return {
                     id: op.Id,
-                    NumOperation: op.Numero || '', 
+                    NumOperation: op.Numero || '',
                     ServiceDeContract: op.Service_Contractant || '',
                     TypeBudget: getBudgetTypeLabel(op.TypeBudget),
                     TypeBudgetCode: op.TypeBudget,
-                    ModeAttribution: getModeAttribuationLabel(op.ModeAttribution),
-                    ModeAttributionCode: op.ModeAttribution,
-                    Objectif: op.Objet || '',  
+                    ModeAttribution: getModeAttribuationLabel(op.ModeAttribuation),
+                    ModeAttributionCode: op.ModeAttribuation,
+                    Objectif: op.Objet || '',
                     TypeTravail: getTypeTravauxLabel(op.TypeTravaux),
                     TypeTravauxCode: op.TypeTravaux,
                     State: getStateLabel(op.State),
                     StateCode: op.State,
                     VisaNumber: op.NumeroVisa || '',
                     VisaDate: formatDate(op.DateVisa)
-              }));
-        
+                };
+            });
+
         setOperations(mappedOperations);
-        
+
     } catch (error) {
-        console.error('❌ Error in fetchOperations:', error);
         showToast('Impossible de charger les opérations. Veuillez réessayer.', 'error');
         setOperations([]);
     } finally {
@@ -115,6 +117,9 @@ useEffect(() => {
   }
 }, [user]);
 
+useEffect(()=>{
+  console.log('Mapped operations: ',operations)
+},[operations])
 const fetchAllSupplier = async () => {
   try {
     setSupplierLoading(true);

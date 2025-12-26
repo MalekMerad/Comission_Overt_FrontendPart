@@ -1,27 +1,22 @@
 import { useEffect, useRef } from "react";
+import {parseDateSafe, formatDateInput,addDays} from '../../utils/dateFormat';
 
-function addDays(baseDate, days) {
-    if (!baseDate || days === undefined || days === null || days === "") return "";
-    const date = new Date(baseDate);
-    if (isNaN(date.getTime())) return "";
-    date.setDate(date.getDate() + Number(days));
-    return date.toISOString().split("T")[0];
-}
 export function NewAnnounceForm({ newAnnouncement, setNewAnnouncement, operations, isEditing }) {
     const lastAutoUpdateRef = useRef(null);
-
+    
     useEffect(() => {
-        const { datePublication, delai, dateOuverture } = newAnnouncement;
+        const { datePublication, delai } = newAnnouncement;
     
         if (datePublication && delai && /^\d+$/.test(delai)) {
             const calculated = addDays(datePublication, delai);
-                setNewAnnouncement(n => {
-                    lastAutoUpdateRef.current = calculated;
-                    return { ...n, dateOuverture: calculated };
-                });
-            
+    
+            setNewAnnouncement(n => {
+                lastAutoUpdateRef.current = calculated;
+                return { ...n, dateOuverture: calculated };
+            });
         }
     }, [newAnnouncement.datePublication, newAnnouncement.delai]);
+    
 
     return (
         <div className="space-y-4">
