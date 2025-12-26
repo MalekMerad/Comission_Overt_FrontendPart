@@ -2,7 +2,7 @@ import { Edit2, Trash2 } from 'lucide-react';
 
 export function AnnouncementsTable({ announcements, getOperationNumero, handleOpenModal, handleDeleteAnnouncement }) {
     return (
-        <div className="overflow-auto max-h-[400px]">
+        <div className={announcements.length > 6 ? "overflow-y-scroll max-h-[432px]" : "overflow-y-visible"}>
             <table className="w-full border-collapse border border-gray-300">
                 <thead className="bg-gray-100 sticky top-0">
                     <tr>

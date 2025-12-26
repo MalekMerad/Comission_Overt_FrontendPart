@@ -1,6 +1,7 @@
 import React from 'react';
 
-// Use the *exact* key used in OperationsTable/operationsService for attribution
+
+
 const labelMap = {
   NumOperation: "Numéro d'opération",
   ServContract: "Service de passation des marchés",
@@ -47,18 +48,47 @@ const fields = [
   }
 ];
 
-const formatValue = (key, value) => {
-  if (key === "DateVisa" && value) {
-    try {
-      return new Date(value).toLocaleDateString();
-    } catch {
-      return value;
-    }
+const parseFlexibleDate = (value) => {
+  if (!value || typeof value !== "string") return null;
+
+  // Format: JJ/MM/AAAA (French)
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
+    const [day, month, year] = value.split("/");
+    return new Date(`${year}-${month}-${day}`);
   }
-  return value !== undefined && value !== null ? value : <span className="text-gray-400 italic">Non renseigné</span>;
+
+  // Format: AAAA/MM/JJ (Reversed)
+  if (/^\d{4}\/\d{2}\/\d{2}$/.test(value)) {
+    const [year, month, day] = value.split("/");
+    return new Date(`${year}-${month}-${day}`);
+  }
+
+  // ISO or fallback
+  const d = new Date(value);
+  return isNaN(d) ? null : d;
 };
 
+const formatValue = (key, value) => {
+  if (key === "DateVisa" && value) {
+    const parsedDate = parseFlexibleDate(value);
+
+    if (!parsedDate) {
+      return <span className="text-red-500 italic">Date invalide</span>;
+    }
+
+    return parsedDate.toLocaleDateString("fr-FR");
+  }
+
+  return value !== undefined && value !== null
+    ? value
+    : <span className="text-gray-400 italic">Non renseigné</span>;
+};
+
+
+
 const OperationDetails = ({ operation }) => {
+
+  console.log('OperationDetails Operation :', operation)
   return (
     <div className="space-y-6 py-3">
       <div className="grid grid-cols-2 gap-6">
