@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import PlatformLogo from '../assets/Logo2.png'
-import '../../styles/pagesStyles/Home.css'
+import PlatformLogo from '../assets/Logo-Home.png'
 
 function Home() {
   const navigate = useNavigate()
@@ -29,11 +28,11 @@ function Home() {
   }
 
   return (
-    <div className='splash-container'>
+    <div className='w-screen h-screen flex items-center justify-center bg-white'>
       <AnimatePresence mode="wait">
         {showSplash && (
           <motion.div
-            className='splash-content'
+            className='flex flex-col items-center gap-6 text-slate-900 cursor-pointer'
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ 
               opacity: 1, 
@@ -46,14 +45,12 @@ function Home() {
               transition: { 
                 duration: 0.6, 
                 ease: "easeIn",
-                opacity: { duration: 0.5 }
               }
             }}
             onClick={handleSkip}
-            style={{ cursor: 'pointer' }}
           >
+            {/* Logo */}
             <motion.div
-              className='logo-container'
               initial={{ scale: 0.5, opacity: 0, y: 20 }}
               animate={{ 
                 scale: 1, 
@@ -69,18 +66,18 @@ function Home() {
               exit={{
                 scale: 0.8,
                 opacity: 0,
-                transition: { duration: 0.4, ease: "easeIn" }
               }}
             >
               <img 
                 src={PlatformLogo} 
                 alt="Project Overture Logo" 
-                className='splash-logo'
+                className='w-32 h-32 object-contain'
               />
             </motion.div>
-            
+
+            {/* Platform Name */}
             <motion.h1
-              className='platform-name'
+              className='text-4xl font-bold tracking-wide'
               initial={{ y: 30, opacity: 0 }}
               animate={{ 
                 y: 0, 
@@ -94,14 +91,14 @@ function Home() {
               exit={{
                 y: -20,
                 opacity: 0,
-                transition: { duration: 0.4, ease: "easeIn" }
               }}
             >
               PlisFlow
             </motion.h1>
-
+              
+            {/* Loading Bar */}
             <motion.div
-              className='loading-bar-container'
+              className='w-64 h-2 bg-slate-700 rounded overflow-hidden'
               initial={{ opacity: 0 }}
               animate={{ 
                 opacity: 1,
@@ -109,11 +106,10 @@ function Home() {
               }}
               exit={{ 
                 opacity: 0,
-                transition: { duration: 0.3 }
               }}
             >
               <motion.div
-                className='loading-bar'
+                className='h-full bg-slate-500 origin-left'
                 initial={{ scaleX: 0 }}
                 animate={{ 
                   scaleX: 1,
@@ -129,8 +125,10 @@ function Home() {
                 }}
               />
             </motion.div>
+
+            {/* Skip Hint */}
             <motion.p
-              className='skip-hint'
+              className='text-sm text-slate-400'
               initial={{ opacity: 0 }}
               animate={{ 
                 opacity: 0.7,
@@ -144,7 +142,7 @@ function Home() {
         )}
       </AnimatePresence>
       {startExit && (
-        <div style={{ display: 'none' }}>
+        <div className='hidden'>
         </div>
       )}
     </div>

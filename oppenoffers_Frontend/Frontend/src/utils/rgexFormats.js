@@ -15,6 +15,24 @@ const regexFormats = {
     ip: /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
     hex: /^#([0-9a-fA-F]{6})$/,
     creditCard: /^(\d{4}[- ]?){3}\d{4}$/,
-}
+    
+    text: /^(?=.*[a-zA-Z])[a-zA-Z0-9\s'-]{3,}$/,
+    noRepeat: /^(?!.*(.)\1{3,}).*$/
+
+};
+
+export const validateText = (value) => {
+    if (!value) return "Champ obligatoire";
+
+    if (!regexFormats.text.test(value)) {
+        return "Texte invalide (FR/EN, min 3 caractères)";
+    }
+
+    if (!regexFormats.noRepeat.test(value)) {
+        return "Répétition excessive de caractères";
+    }
+
+    return "";
+};
 
 export default regexFormats;

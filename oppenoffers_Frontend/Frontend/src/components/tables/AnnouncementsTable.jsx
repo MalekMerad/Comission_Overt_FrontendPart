@@ -1,8 +1,20 @@
 import { Edit2, Trash2 } from 'lucide-react';
+import { useState } from "react";
+import { Pagination } from "../tools/Pagination"
+
 
 export function AnnouncementsTable({ announcements, getOperationNumero, handleOpenModal, handleDeleteAnnouncement }) {
+        const [currentPage, setCurrentPage] = useState(1);
+        const rowsPerPage = 6;
+    
+        const indexOfLastRow = currentPage * rowsPerPage;
+        const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+        const currentAnnouncements = announcements.slice(indexOfFirstRow, indexOfLastRow);
+    
+        const totalPages = Math.ceil(announcements.length / rowsPerPage);
+    
     return (
-        <div className={announcements.length > 6 ? "overflow-y-scroll max-h-[432px]" : "overflow-y-visible"}>
+        <div className="overflow-auto max-h-[400px]">
             <table className="w-full border-collapse border border-gray-300">
                 <thead className="bg-gray-100 sticky top-0">
                     <tr>
@@ -16,7 +28,7 @@ export function AnnouncementsTable({ announcements, getOperationNumero, handleOp
                     </tr>
                 </thead>
                 <tbody>
-                    {announcements.map(ann => (
+                    {currentAnnouncements.map(ann => (
                         <tr key={ann.Id} className="hover:bg-gray-50">
                             <td className="border border-gray-300 px-4 py-2">{ann.Numero}</td>
                             <td className="border border-gray-300 px-4 py-2">{new Date(ann.Date_Publication).toLocaleDateString()}</td>
@@ -46,6 +58,13 @@ export function AnnouncementsTable({ announcements, getOperationNumero, handleOp
                     ))}
                 </tbody>
             </table>
+
+            {/* Pagination */}
+            <Pagination 
+                totalPages={totalPages} 
+                currentPage={currentPage} 
+                handlePageChange={setCurrentPage} 
+            />
         </div>
     );
 }

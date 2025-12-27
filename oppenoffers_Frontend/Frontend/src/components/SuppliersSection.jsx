@@ -26,6 +26,7 @@ export function SuppliersSection() {
     AgenceBancaire: "",
     Rib: "",
     Ai: "",
+    NomPrenom: "",
   });
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -73,6 +74,7 @@ export function SuppliersSection() {
         AgenceBancaire: supplier.AgenceBancaire,
         Rib: supplier.Rib,
         Ai: supplier.Ai,
+        NomPrenom: supplier.NomPrenom,
       });
     } else {
       setEditingSupplier(null);
@@ -87,6 +89,7 @@ export function SuppliersSection() {
         AgenceBancaire: "",
         Rib: "",
         Ai: "",
+        NomPrenom: "",
       });
     }
     setShowModal(true);
