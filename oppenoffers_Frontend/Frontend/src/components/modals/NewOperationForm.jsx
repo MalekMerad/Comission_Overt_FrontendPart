@@ -1,7 +1,10 @@
 import React from "react";
+import { validateText } from "../../utils/rgexFormats";
 
 export function NewOperationForm({ newOperationData, setNewOperationData }) {
-   
+    const [errors, setErrors] = React.useState({});
+    
+    // Set default values when component mounts
     React.useEffect(() => {
         const defaults = {
             TravalieType: 'Travaux',
@@ -31,6 +34,11 @@ export function NewOperationForm({ newOperationData, setNewOperationData }) {
         }
     }, []);
 
+    const handleTextChange = (field, value) => {
+        setNewOperationData({ ...newOperationData, [field] : value});
+        setErrors({ ...errors, [field] : validateText(value)});
+    };
+
     return (
         <form
             id="new-operation-form"
@@ -46,11 +54,17 @@ export function NewOperationForm({ newOperationData, setNewOperationData }) {
                         type="text"
                         required
                         value={newOperationData.NumOperation || ''}
-                        onChange={e => setNewOperationData({ ...newOperationData, NumOperation: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
+                        onChange={e => handleTextChange("NumOperation", e.target.value)}
+                        className={`w-full px-3 py-2 border rounded ${
+                            errors.NumOperation ? "border-red-500" : "border-gray-300"
+                        }`}
                         placeholder="Ex : 2024-00054"
                     />
+                    {errors.NumOperation && (
+                        <p className="text-red-500 text-xs mt-1">{errors.NumOperation}</p>
+                    )}
                 </div>
+                
                 <div>
                     <label className="block text-sm font-medium mb-1">
                         Service de passation des marchés <span className="text-red-500">*</span>
@@ -59,12 +73,18 @@ export function NewOperationForm({ newOperationData, setNewOperationData }) {
                         type="text"
                         required
                         value={newOperationData.ServContract || ''}
-                        onChange={e => setNewOperationData({ ...newOperationData, ServContract: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
+                        onChange={e => handleTextChange("ServContract", e.target.value)}
+                        className={`w-full px-3 py-2 border rounded ${
+                            errors.ServContract ? "border-red-500" : "border-gray-300"
+                        }`}
                         placeholder="Ex : Direction des Achats"
                     />
+                    {errors.ServContract && (
+                        <p className="text-red-500 text-xs mt-1">{errors.ServContract}</p>
+                    )}
                 </div>
             </div>
+
             <div>
                 <label className="block text-sm font-medium mb-1">
                     Objectif de l'opération <span className="text-red-500">*</span>
@@ -72,11 +92,17 @@ export function NewOperationForm({ newOperationData, setNewOperationData }) {
                 <textarea
                     required
                     value={newOperationData.Objectif || ''}
-                    onChange={e => setNewOperationData({ ...newOperationData, Objectif: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded min-h-[38px] resize-none"
+                    onChange={e => handleTextChange("Objectif", e.target.value)}
+                    className={`w-full px-3 py-2 border rounded resize-none ${
+                        errors.Objectif ? "border-red-500" : "border-gray-300"
+                    }`}                   
                     placeholder="Ex : Amélioration de l'infrastructure..."
                 />
+                {errors.Objectif && (
+                    <p className="text-red-500 text-xs mt-1">{errors.Objectif}</p>
+                )}
             </div>
+
             <div className="grid grid-cols-2 gap-4">
                 <div>
                     <label className="block text-sm font-medium mb-1">
@@ -105,7 +131,7 @@ export function NewOperationForm({ newOperationData, setNewOperationData }) {
             </div>
             <div className="grid grid-cols-3 gap-4">
                 <div>
-                    <label className="block text-sm font-medium mb-1">Type de travail *</label>
+                    <label className="block text-sm font-medium mb-1">Type de travail <span className="text-red-500">*</span></label>
                     <select
                         required
                         value={newOperationData.TravalieType || 'Travaux'}
@@ -119,7 +145,7 @@ export function NewOperationForm({ newOperationData, setNewOperationData }) {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium mb-1">Type de budget *</label>
+                    <label className="block text-sm font-medium mb-1">Type de budget <span className="text-red-500">*</span></label>
                     <select
                         required
                         value={newOperationData.BudgetType || 'Equipement'}
@@ -132,7 +158,7 @@ export function NewOperationForm({ newOperationData, setNewOperationData }) {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium mb-1">Méthode d'attribution *</label>
+                    <label className="block text-sm font-medium mb-1">Méthode d'attribution <span className="text-red-500">*</span></label>
                     <select
                         required
                         value={newOperationData.MethodAttribuation || "Appel d'Offres Ouvert"}

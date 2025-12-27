@@ -1,8 +1,20 @@
 import { Edit2, Trash2 } from 'lucide-react';
+import { Pagination } from "../tools/Pagination"
+import { useState } from "react";
 
 export function LotsTable({ lots, getOperationNumero, handleOpenModal, handleDeleteLot }) {
+    
+    const [currentPage, setCurrentPage] = useState(1);
+    const rowsPerPage = 6;
+
+    const indexOfLastRow = currentPage * rowsPerPage;
+    const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+    const currentLots = lots.slice(indexOfFirstRow, indexOfLastRow);
+
+    const totalPages = Math.ceil(lots.length / rowsPerPage);
+
     return (
-        <div className={lots.length > 6 ? "overflow-y-scroll max-h-[432px]" : "overflow-y-visible"}>
+        <div>
             <table className="w-full border-collapse border border-gray-300">
                 <thead className="bg-gray-100 sticky top-0">
                     <tr>
@@ -13,7 +25,7 @@ export function LotsTable({ lots, getOperationNumero, handleOpenModal, handleDel
                     </tr>
                 </thead>
                 <tbody>
-                    {lots.map((lot) => {
+                    {currentLots.map((lot) => {
                         const lotId = lot.id; 
                         return (
                             <tr key={lotId} className="hover:bg-gray-50">
@@ -41,6 +53,13 @@ export function LotsTable({ lots, getOperationNumero, handleOpenModal, handleDel
                     })}
                 </tbody>
             </table>
+
+            {/* Pagination */}
+            <Pagination 
+                totalPages={totalPages} 
+                currentPage={currentPage} 
+                handlePageChange={setCurrentPage} 
+            />
         </div>
     );
 }

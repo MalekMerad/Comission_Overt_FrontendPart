@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Plus, UserPlus, X, Search } from 'lucide-react';
 import { LotsSubSection } from './LotsSubSection';
 import { AnnouncementSubSection } from './AnnouncementSubSection';
-import OperationDetails from './detailsModal/OperationDetails';
 import { useAuth } from '../context/AuthContext';
+import OperationDetails from './detailsModal/OperationDetails';
 import { getOperations, newOperation, deleteoperation } from '../services/operationService';
 import { getAllSuppliers, newSupplier as addNewSupplierService } from '../services/supplierService';
-
 import { OperationsTable } from './tables/OperationsTable';
 import { FormModal } from './modals/FormModal';
 import { NewOperationForm } from './modals/NewOperationForm';
@@ -27,13 +26,14 @@ export function OperationsSection() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showOperationModal, setShowOperationModal] = useState(false);
-
   const [showSupplierModal, setShowSupplierModal] = useState(false);
-  const [showOperationDetailsModal, setShowOperationDetailsModal] = useState(false);
+
   const [showNewSupplierModal, setShowNewSupplierModal] = useState(false);
   const [selectedOperationForSupplier, setSelectedOperationForSupplier] = useState(null);
-
+  
+  const [showOperationDetailsModal, setShowOperationDetailsModal] = useState(false);
   const [showOperationDetails, setShowOperationDetails] = useState(null);
+  
   const navigate = useNavigate();
 
   const [newOperationData, setNewOperationData] = useState({
@@ -56,6 +56,7 @@ export function OperationsSection() {
 
   const [newSupplier, setNewSupplier] = useState({
     NomSociete: '',
+    NomPrenom: '',
     NatureJuridique: '',
     Adresse: '',
     Telephone: '',
@@ -72,37 +73,35 @@ export function OperationsSection() {
     try {
         setLoading(true);
         const adminID = user?.userId || user?.userid;
-
+        
         if (!adminID) {
             showToast('Session expirée. Veuillez vous reconnecter.', 'error');
             return;
         }
         const operationsData = await getOperations(adminID);
-
         const mappedOperations = operationsData
             .filter(op => op.State === 1)
-            .map(op => {
-                return {
+            .map(op => ({
                     id: op.Id,
-                    NumOperation: op.Numero || '',
+                    NumOperation: op.Numero || '', 
                     ServiceDeContract: op.Service_Contractant || '',
                     TypeBudget: getBudgetTypeLabel(op.TypeBudget),
                     TypeBudgetCode: op.TypeBudget,
                     ModeAttribution: getModeAttribuationLabel(op.ModeAttribuation),
                     ModeAttributionCode: op.ModeAttribuation,
-                    Objectif: op.Objet || '',
+                    Objectif: op.Objet || '',  
                     TypeTravail: getTypeTravauxLabel(op.TypeTravaux),
                     TypeTravauxCode: op.TypeTravaux,
                     State: getStateLabel(op.State),
                     StateCode: op.State,
                     VisaNumber: op.NumeroVisa || '',
                     VisaDate: formatDate(op.DateVisa)
-                };
-            });
-
+              }));
+        
         setOperations(mappedOperations);
-
+        
     } catch (error) {
+        console.error('❌ Error in fetchOperations:', error);
         showToast('Impossible de charger les opérations. Veuillez réessayer.', 'error');
         setOperations([]);
     } finally {
@@ -116,10 +115,6 @@ useEffect(() => {
       hasFetchedRef.current = true;
   }
 }, [user]);
-
-useEffect(()=>{
-  console.log('Mapped operations: ',operations)
-},[operations])
 
 const fetchAllSupplier = async () => {
   try {
@@ -263,14 +258,15 @@ const handleAddOperation = async () => {
 
   const handleAddNewSupplier = async () => {
   
-    if (!newSupplier.NomSociete || !newSupplier.Nif) {
-      showToast('Le nom de la société et le NIF sont obligatoires.', 'error');
+    if (!newSupplier.NomPrenom || !newSupplier.Telephone) {
+      showToast('Le nom , Prenom et le Telephone sont obligatoires.', 'error');
       return;
     }
 
     try {
       const supplierData = {
         NomSociete: newSupplier.NomSociete,
+        NomPrenom: newSupplier.NomPrenom,
         NatureJuridique: newSupplier.NatureJuridique,
         Adresse: newSupplier.Adresse,
         Telephone: newSupplier.Telephone,
@@ -298,6 +294,7 @@ const handleAddOperation = async () => {
 
         setNewSupplier({
           NomSociete: '',
+          NomPrenom: '',
           NatureJuridique: 'SARL',
           Adresse: '',
           Telephone: '',
@@ -385,19 +382,18 @@ const handleAddOperation = async () => {
         <AnnouncementSubSection operations={operations} />
       </div>
 
-      <FormModal
+        <FormModal
             isOpen={showOperationModal}
             onClose={() => setShowOperationModal(false)}
             onSave={handleAddOperation}
             title="Nouvelle Opération"
             saveText="Ajouter l'opération"
             isLoading={isSubmitting}
-
         >
             <NewOperationForm newOperationData={newOperationData} setNewOperationData={setNewOperationData} />
         </FormModal>
-        
-      {showOperationDetails && (
+
+        {showOperationDetails && (
         <FormModal
           isOpen={showOperationDetailsModal}
           onClose={() => setShowOperationDetailsModal(false)}
@@ -408,6 +404,7 @@ const handleAddOperation = async () => {
         </FormModal>
       )}
 
+      {/* Supplier Selection Modal */}
       {showSupplierModal && (
         <div className="fixed inset-0 bg-white/120 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded border-2 border-gray-400 w-full max-w-6xl max-h-[90vh] overflow-y-auto">
@@ -507,6 +504,41 @@ const handleAddOperation = async () => {
               <div className="space-y-4">
                 {/* Row 1: Raison sociale & RC */}
                 <div className="grid grid-cols-2 gap-4">
+                  <div className="mb-4">
+                    <label className="block text-sm mb-1">Nom et Prénom *</label>
+                    <input
+                      type="text"
+                      value={newSupplier.NomPrenom}
+                      onChange={e =>
+                        setNewSupplier({ ...newSupplier, NomPrenom: e.target.value })
+                      }
+                      className="w-full border px-3 py-2 rounded"
+                      placeholder="Ex: Ahmed Benali"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-1">Téléphone</label>
+                    <input
+                      type="text"
+                      value={newSupplier.Telephone}
+                      onChange={e => setNewSupplier({ ...newSupplier, Telephone: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded"
+                      placeholder="Ex: 0661 02 03 04"
+                    />
+                  </div>
+                </div>
+                {/* Row 2: Nature juridique & AI */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm mb-1">Email</label>
+                    <input
+                      type="email"
+                      value={newSupplier.Email}
+                      onChange={e => setNewSupplier({ ...newSupplier, Email: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded"
+                      placeholder="Ex: fournisseur@email.com"
+                    />
+                  </div>
                   <div>
                     <label className="block text-sm mb-1">Raison sociale *</label>
                     <input
@@ -517,6 +549,33 @@ const handleAddOperation = async () => {
                       placeholder="Ex: SARL El Amine Commerce"
                     />
                   </div>
+                </div>
+                {/* Row 3: NIF & Téléphone */}
+                <div className="grid grid-cols-2 gap-4">
+                  
+                  <div>
+                    <label className="block text-sm mb-1">NIF *</label>
+                    <input
+                      type="text"
+                      value={newSupplier.Nif}
+                      onChange={e => setNewSupplier({ ...newSupplier, Nif: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded"
+                      placeholder="Ex: 000616080698110"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-1">AI</label>
+                    <input
+                      type="text"
+                      value={newSupplier.Ai}
+                      onChange={e => setNewSupplier({ ...newSupplier, Ai: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded"
+                      placeholder="Ex: 12345678"
+                    />
+                  </div>
+                </div>
+                {/* Row 4: Email & Agence Bancaire */}
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm mb-1">RC</label>
                     <input
@@ -527,8 +586,18 @@ const handleAddOperation = async () => {
                       placeholder="Ex: 16B1234567"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm mb-1">RIB</label>
+                    <input
+                      type="text"
+                      value={newSupplier.Rib}
+                      onChange={e => setNewSupplier({ ...newSupplier, Rib: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded"
+                      placeholder="Ex: 001002030400500600"
+                    />
+                  </div>
                 </div>
-                {/* Row 2: Nature juridique & AI */}
+                {/* Row 5: RIB & Adresse */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm mb-1">Nature juridique *</label>
@@ -546,52 +615,6 @@ const handleAddOperation = async () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm mb-1">AI</label>
-                    <input
-                      type="text"
-                      value={newSupplier.Ai}
-                      onChange={e => setNewSupplier({ ...newSupplier, Ai: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded"
-                      placeholder="Ex: 12345678"
-                    />
-                  </div>
-                </div>
-                {/* Row 3: NIF & Téléphone */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm mb-1">NIF *</label>
-                    <input
-                      type="text"
-                      value={newSupplier.Nif}
-                      onChange={e => setNewSupplier({ ...newSupplier, Nif: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded"
-                      placeholder="Ex: 000616080698110"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm mb-1">Téléphone</label>
-                    <input
-                      type="text"
-                      value={newSupplier.Telephone}
-                      onChange={e => setNewSupplier({ ...newSupplier, Telephone: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded"
-                      placeholder="Ex: 0661 02 03 04"
-                    />
-                  </div>
-                </div>
-                {/* Row 4: Email & Agence Bancaire */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm mb-1">Email</label>
-                    <input
-                      type="email"
-                      value={newSupplier.Email}
-                      onChange={e => setNewSupplier({ ...newSupplier, Email: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded"
-                      placeholder="Ex: fournisseur@email.com"
-                    />
-                  </div>
-                  <div>
                     <label className="block text-sm mb-1">Agence Bancaire</label>
                     <input
                       type="text"
@@ -602,18 +625,6 @@ const handleAddOperation = async () => {
                     />
                   </div>
                 </div>
-                {/* Row 5: RIB & Adresse */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm mb-1">RIB</label>
-                    <input
-                      type="text"
-                      value={newSupplier.Rib}
-                      onChange={e => setNewSupplier({ ...newSupplier, Rib: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded"
-                      placeholder="Ex: 001002030400500600"
-                    />
-                  </div>
                   <div>
                     <label className="block text-sm mb-1">Adresse</label>
                     <textarea
@@ -624,7 +635,6 @@ const handleAddOperation = async () => {
                       placeholder="Ex: 10 Rue Pasteur, Annaba"
                     />
                   </div>
-                </div>
               </div>
 
               <div className="mt-6 flex gap-3 justify-end">

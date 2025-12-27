@@ -4,6 +4,18 @@ export function NewSupplierForm({ newSupplier, setNewSupplier, isEditing }) {
         <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
                 <div>
+                    <label className="block text-sm mb-1">Nom et Prénom *</label>
+                    <input
+                        type="text"
+                        value={newSupplier.NomPrenom}
+                        onChange={(e) =>
+                            setNewSupplier({ ...newSupplier, NomPrenom: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded"
+                        placeholder="Ex: Ahmed Benali"
+                    />
+                </div>
+                <div>
                     <label className="block text-sm mb-1">Raison sociale *</label>
                     <input
                         type="text"

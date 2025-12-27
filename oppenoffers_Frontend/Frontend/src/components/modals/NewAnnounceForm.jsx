@@ -94,20 +94,6 @@ export function NewAnnounceForm({ newAnnouncement, setNewAnnouncement, operation
                     />
                 </div>
             </div>
-            <div className="grid grid-cols-3 gap-4">
-                <div>
-                    <label className="block text-sm mb-1">Heure d'ouverture</label>
-                    <input
-                        type="time"
-                        value={newAnnouncement.heureOuverture || ''}
-                        onChange={e =>
-                            setNewAnnouncement({ ...newAnnouncement, heureOuverture: e.target.value })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
-                        placeholder="hh:mm"
-                    />
-                </div>
-            </div>
         </div>
     );
 }
