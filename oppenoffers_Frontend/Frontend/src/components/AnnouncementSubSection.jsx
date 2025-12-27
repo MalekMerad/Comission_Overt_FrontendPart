@@ -23,6 +23,7 @@ export function AnnouncementSubSection({ operations }) {
     journal: 'BOMOP',
     delai: '',
     dateOuverture: '',
+    heureOuverture: '',
   });
 
   const fetchAnnouncements = async () => {
@@ -31,7 +32,6 @@ export function AnnouncementSubSection({ operations }) {
       setLoading(true);
       try {
         const response = await getAllAnnonces(currentAdmin);
-        // Ensure data is an array
         const data = response.annonces || response.data || response; 
         setAnnouncements(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -57,6 +57,7 @@ export function AnnouncementSubSection({ operations }) {
         journal: announcement.Journal,
         delai: announcement.Delai,
         dateOuverture: announcement.Date_Overture ? new Date(announcement.Date_Overture).toISOString().split('T')[0] : '',
+        heureOuverture: announcement.Heure_Ouverture
       });
     } else {
       setEditingAnnouncement(null);
@@ -68,6 +69,7 @@ export function AnnouncementSubSection({ operations }) {
         journal: 'BOMOP',
         delai: '',
         dateOuverture: '',
+        heureOuverture : '',
       });
     }
     setShowModal(true);
@@ -91,6 +93,7 @@ export function AnnouncementSubSection({ operations }) {
         Journal: newAnnouncement.journal,
         Delai: newAnnouncement.delai,
         Date_Overture: newAnnouncement.dateOuverture,
+        Heure_Ouverture : newAnnouncement.heureOuverture,
         adminId: user?.userId || user?.userid
     };
 
@@ -99,7 +102,7 @@ export function AnnouncementSubSection({ operations }) {
             const dataToUpdate = { ...formData, Id: editingAnnouncement.Id };
             const result = await updateAnnonce(dataToUpdate);
             if (result.success) {
-                await fetchAnnouncements(); // Refresh to ensure data consistency
+                await fetchAnnouncements(); 
                 handleModalClose();
                 showToast('Annonce modifiée avec succès.', 'success');
             } else {

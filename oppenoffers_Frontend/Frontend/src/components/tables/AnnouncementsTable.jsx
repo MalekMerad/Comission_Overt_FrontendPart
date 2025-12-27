@@ -23,6 +23,7 @@ export function AnnouncementsTable({ announcements, getOperationNumero, handleOp
                         <th className="border border-gray-300 px-4 py-2 text-left">Journal</th>
                         <th className="border border-gray-300 px-4 py-2 text-left">Délai</th>
                         <th className="border border-gray-300 px-4 py-2 text-left">Date ouverture</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Heure d'ouverture</th>
                         <th className="border border-gray-300 px-4 py-2 text-left">Numero d'operation</th>
                         <th className="border border-gray-300 px-4 py-2 text-center">Actions</th>
                     </tr>
@@ -35,6 +36,7 @@ export function AnnouncementsTable({ announcements, getOperationNumero, handleOp
                             <td className="border border-gray-300 px-4 py-2">{ann.Journal}</td>
                             <td className="border border-gray-300 px-4 py-2">{ann.Delai}</td>
                             <td className="border border-gray-300 px-4 py-2">{new Date(ann.Date_Overture).toLocaleDateString()}</td>
+                            <td className="border border-gray-300 px-4 py-2 text-center">{ann.Heure_Ouverture || '--:--'}</td>
                             <td className="border border-gray-300 px-4 py-2">{getOperationNumero(ann.Id_Operation)}</td>
                             <td className="border border-gray-300 px-4 py-2">
                                 <div className="flex items-center justify-center gap-3">

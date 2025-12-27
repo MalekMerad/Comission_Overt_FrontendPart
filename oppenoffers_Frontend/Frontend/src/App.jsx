@@ -14,18 +14,24 @@ import NotAuthenticated from './pages/NotAuthenticated';
 
 function App() {
   const router = createBrowserRouter([
-    {
+   /** 
+    *  {
       path: '/',
       element: <Home />,
+    },
+   */
+    {
+      path: '/',
+      element: <Login />,
     },
     {
       path:'/invalid',
       element : <NotAuthenticated/>
     },
-    {
+    /*{
       path: '/login',
       element: <Login />,
-    },
+    },*/
     {
       path: '/admin',
       element: <PrivateRoute />,
