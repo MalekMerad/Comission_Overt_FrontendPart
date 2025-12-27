@@ -13,7 +13,8 @@ const annonceSchema = yup.object().shape({
     Journal: yup.string().required("Le nom du journal est requis."),
     Delai: yup.string().required("Le délai est requis."),
     Date_Overture: yup.string().required("La date d'ouverture est requise."),
-    adminId: yup.string().required("L'identifiant administrateur est requis.")
+    Heure_Ouverture: yup.string().required("L'heure d'overture est requis"),
+    adminId: yup.string().required("L'identifiant administrateur est requis."),
 });
 
 export const newAnnonce = (formData) => {

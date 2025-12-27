@@ -17,7 +17,7 @@ export function LotsTable({ lots, getOperationNumero, handleOpenModal, handleDel
                         const lotId = lot.id; 
                         return (
                             <tr key={lotId} className="hover:bg-gray-50">
-                                <td className="border border-gray-300 px-4 py-2">{lot.NumerLot}</td>
+                                <td className="border border-gray-300 px-4 py-2">{lot.NumeroLot}</td>
                                 <td className="border border-gray-300 px-4 py-2">{lot.Designation}</td>
                                 <td className="border border-gray-300 px-4 py-2">{getOperationNumero(lot.id_Operation)}</td>
                                 <td className="border border-gray-300 px-4 py-2">

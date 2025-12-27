@@ -120,6 +120,7 @@ useEffect(() => {
 useEffect(()=>{
   console.log('Mapped operations: ',operations)
 },[operations])
+
 const fetchAllSupplier = async () => {
   try {
     setSupplierLoading(true);
