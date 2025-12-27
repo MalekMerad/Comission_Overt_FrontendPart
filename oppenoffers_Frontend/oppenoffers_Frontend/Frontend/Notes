@@ -1,0 +1,15 @@
+Tested : 
+    [Operations]
+-Add new Operation
+-remove operation
+-Display Lots 
+    [Lots]
+-Remove lots
+-Display Lot
+-Add Lot
+-
+    [Announce]
+-Remove Announce
+-Display Announce
+    [Fournisseur]
+-Display Fournisseur
