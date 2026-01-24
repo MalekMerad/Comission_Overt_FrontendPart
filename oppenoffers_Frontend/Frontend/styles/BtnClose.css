@@ -1,0 +1,76 @@
+/* ===== CONTENEUR MODAL ===== */
+.modal-large-content-fourns, .lot-details-box, .modal-large-content {
+  position: relative;
+  padding: 2rem 1.5rem 1.5rem;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== BOUTON CLOSE ===== */
+.modal-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  background-color: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  color: #2b0069;
+
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  z-index: 100;
+}
+
+/* Hover simple (sans déplacement) */
+.modal-close-btn:hover {
+  background-color: rgba(43, 0, 105, 0.08);
+}
+
+/* Focus clavier (accessibilité) */
+.modal-close-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(43, 0, 105, 0.25);
+}
+
+/* Click */
+.modal-close-btn:active {
+  background-color: rgba(43, 0, 105, 0.15);
+}
+
+/* ===== MODE SOMBRE (FACULTATIF) ===== */
+.dark .modal-large-content-fourns {
+  background-color: #0f0b20;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7);
+}
+
+.dark .modal-close-btn {
+  color: #ffffff;
+}
+
+.dark .modal-close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 480px) {
+  .modal-close-btn {
+    width: 42px;
+    height: 42px;
+    top: 12px;
+    right: 12px;
+    font-size: 22px;
+  }
+}

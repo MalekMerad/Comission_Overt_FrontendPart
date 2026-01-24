@@ -1,0 +1,252 @@
+1- Function : [selectAllFournisseurs] 
+USE [PlisFlow]
+GO
+/****** Object:  UserDefinedFunction [dbo].[selectAllFournisseurs]    Script Date: 2026-01-20 7:51:42 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER FUNCTION [dbo].[selectAllFournisseurs](
+    @adminID UNIQUEIDENTIFIER
+)
+RETURNS TABLE
+AS
+RETURN 
+(
+    SELECT 
+        f.Id,
+        f.NomPrenom,
+        f.NomSociete,
+        f.NatureJuridique,
+        f.Adresse,
+        f.Telephone,
+        f.Rc,
+        f.Nif,
+        f.Rib,
+        f.Email,
+        f.Ai,
+        f.AgenceBancaire,
+        f.Status,
+        f.adminId,
+        rt.OperationID AS operationID
+    FROM FOURNISSEURS f
+    LEFT JOIN retrait_cahier_charges rt 
+        ON rt.SupplierID = f.Id 
+       AND rt.Status = 1
+    WHERE f.Status = 1 
+      AND f.adminId = @adminID
+);
+
+
+
+2- function [getSuppliersWithOperations]
+USE [PlisFlow]
+GO
+/****** Object:  UserDefinedFunction [dbo].[getSuppliersWithOperations]    Script Date: 2026-01-20 7:53:27 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER FUNCTION [dbo].[getSuppliersWithOperations]
+(
+    @adminId UNIQUEIDENTIFIER
+)
+RETURNS @Results TABLE
+(
+    Id UNIQUEIDENTIFIER,
+    NomPrenom NVARCHAR(50),
+    Telephone NVARCHAR(50),
+    Email NVARCHAR(50),
+    SupplierStatus TINYINT,
+    RetraitStatus TINYINT,
+    adminId UNIQUEIDENTIFIER,
+    NumeroOperation NVARCHAR(50),
+    OperationId UNIQUEIDENTIFIER,
+    ServiceOperation NVARCHAR(50),
+    ObjectOperation NVARCHAR(MAX)
+)
+AS
+BEGIN
+    INSERT INTO @Results
+    SELECT 
+        s.Id,
+        s.NomPrenom,
+        s.Telephone,
+        s.Email,
+        s.Status AS SupplierStatus,
+        r.Status AS RetraitStatus,
+        s.adminId,
+        o.Numero AS NumeroOperation,
+        o.Id AS OperationId,
+        o.Service_Contractant AS ServiceOperation,
+        o.Objet AS ObjectOperation
+    FROM FOURNISSEURS s
+    INNER JOIN retrait_cahier_charges r WITH(NOLOCK) 
+        ON r.SupplierID = s.Id 
+        AND r.Status = 1 
+    INNER JOIN operations o WITH(NOLOCK)
+        ON o.Id = r.OperationID
+    WHERE s.Status = 1
+      AND s.adminId = @adminId
+    OPTION (RECOMPILE);
+    
+    RETURN;
+END
+
+
+4- Update supplier :USE [PlisFlow]
+GO
+/****** Object:  StoredProcedure [dbo].[updateFournisseur]    Script Date: 2026-01-20 7:54:08 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER PROCEDURE [dbo].[updateFournisseur]
+    @aId UNIQUEIDENTIFIER,
+    @aNomPrenom NVARCHAR(100),
+    @aNomSociete NVARCHAR(50),
+    @aNatureJuridique NVARCHAR(50),
+    @aAdresse NVARCHAR(50),
+    @aTelephone NVARCHAR(50),
+    @aRc NVARCHAR(50) = NULL,
+    @aNif NVARCHAR(50) = NULL,
+    @aRib NVARCHAR(50) = NULL,
+    @aEmail NVARCHAR(50),
+    @aAi NVARCHAR(50) = NULL,
+    @aAgenceBancaire NVARCHAR(50) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Check if supplier exists and is active
+    IF NOT EXISTS (SELECT 1 FROM FOURNISSEURS WHERE Id = @aId AND Status = 1)
+    BEGIN
+        RETURN 2005; -- Supplier not found or inactive
+    END
+    
+    BEGIN TRY
+        DECLARE @ErrorMessage INT;
+        
+        SELECT TOP 1 @ErrorMessage = 
+            CASE 
+                WHEN Telephone = @aTelephone THEN 1004
+                WHEN Email = @aEmail THEN 1005
+                WHEN Rc = @aRc AND @aRc IS NOT NULL AND @aRc <> '' THEN 1002
+                WHEN Nif = @aNif AND @aNif IS NOT NULL AND @aNif <> '' THEN 1003
+                WHEN Rib = @aRib AND @aRib IS NOT NULL AND @aRib <> '' THEN 1006
+                WHEN Ai = @aAi AND @aAi IS NOT NULL AND @aAi <> '' THEN 1007
+                ELSE 0
+            END
+        FROM FOURNISSEURS
+        WHERE Id <> @aId
+          AND (
+              Telephone = @aTelephone
+              OR Email = @aEmail
+              OR (Rc = @aRc AND @aRc IS NOT NULL AND @aRc <> '')
+              OR (Nif = @aNif AND @aNif IS NOT NULL AND @aNif <> '')
+              OR (Rib = @aRib AND @aRib IS NOT NULL AND @aRib <> '')
+              OR (Ai = @aAi AND @aAi IS NOT NULL AND @aAi <> '')
+          );
+        
+        IF @ErrorMessage > 0
+        BEGIN
+            RETURN @ErrorMessage;
+        END
+        
+        -- Update the supplier
+        UPDATE FOURNISSEURS
+        SET 
+            NomPrenom = @aNomPrenom,
+            NomSociete = @aNomSociete,
+            NatureJuridique = @aNatureJuridique,
+            Adresse = @aAdresse,
+            Telephone = @aTelephone,
+            Rc = @aRc,
+            Nif = @aNif,
+            Rib = @aRib,
+            Email = @aEmail,
+            Ai = @aAi,
+            AgenceBancaire = @aAgenceBancaire
+        WHERE Id = @aId;
+        
+        RETURN 0; -- Success
+        
+    END TRY
+    BEGIN CATCH
+        RETURN 5000; -- General error
+    END CATCH
+END
+
+5-Archive system: 
+USE [PlisFlow]
+GO
+/****** Object:  StoredProcedure [dbo].[manageActivateOperation]    Script Date: 2026-01-20 7:54:43 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER   PROC [dbo].[manageActivateOperation]
+    @id UNIQUEIDENTIFIER
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE OPERATIONS
+    SET State = 1
+    WHERE Id = @id
+      AND State = 0;
+
+    RETURN 1001; -- Operation Activated
+END;
+
+6- Insert selected supplier : 
+USE [PlisFlow]
+GO
+/****** Object:  StoredProcedure [dbo].[insertSelectedSupplier]    Script Date: 2026-01-20 7:55:17 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER   PROCEDURE [dbo].[insertSelectedSupplier]
+    @aNomPrenom NVARCHAR(100),
+    @aAdresse NVARCHAR(50),
+    @aTelephone NVARCHAR(50),
+    @aEmail NVARCHAR(50),
+    @adminID UNIQUEIDENTIFIER
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @aId UNIQUEIDENTIFIER = NEWID();
+    
+    BEGIN TRY
+        -- Check if Telephone already exists
+        IF EXISTS (SELECT 1 FROM FOURNISSEURS WHERE Telephone = @aTelephone AND Telephone IS NOT NULL AND Telephone <> '')
+        BEGIN
+            THROW 51004, 'Telephone already exists', 1;
+        END
+
+        -- Check if Email already exists
+        IF EXISTS (SELECT 1 FROM FOURNISSEURS WHERE Email = @aEmail AND Email IS NOT NULL AND Email <> '')
+        BEGIN
+            THROW 51005, 'Email already exists', 1;
+        END
+
+        INSERT INTO FOURNISSEURS 
+            (Id, NomPrenom, Adresse, Telephone, Email, Status, adminId)
+        VALUES 
+            (@aId, @aNomPrenom, @aAdresse, @aTelephone, @aEmail, 1, @adminID);
+        
+    END TRY
+    BEGIN CATCH
+        -- Re-throw the error to the calling application
+        THROW;
+    END CATCH
+END
+
+
+7- Delete FOURNISSEURS UPDATED 
+8- Delete Operation UPDATED
+9- UPDATE RETRAI CAHIER DE CHARGE INSERT
