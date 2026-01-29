@@ -11,12 +11,17 @@ import NotFound from './pages/NotFound';
 import { Administrator } from './pages/Administrator';
 import PrivateRoute from './components/PrivateRoute';
 import NotAuthenticated from './pages/NotAuthenticated';
+import ResetPassword from './pages/ResetPasswordModal';
 
 function App() {
   const router = createBrowserRouter([
     {
       path: '/',
       element: <Login />,
+    },
+    {
+      path: '/reset-password',  
+      element: <ResetPassword />,
     },
     {
       path:'/invalid',

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useLogin } from '../hooks/useLogin'
 import { useAuth } from '../context/AuthContext'
 import TextInput from '../components/FormElements/TextInput'
+import ForgotPasswordModal from '../components/modals/ForgotPasswordModal'
 
 function Login() {
   const navigate = useNavigate()
@@ -18,6 +19,9 @@ function Login() {
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -93,9 +97,13 @@ function Login() {
                 />
                 Se souvenir de moi
               </label>
-              <a href="#" className="text-slate-600 hover:underline">
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="cursor-pointer text-slate-600 hover:underline"
+              >
                 Mot de passe oublié ?
-              </a>
+              </button>
             </div>
 
             {error && (
@@ -138,6 +146,10 @@ function Login() {
           </p>
         </div>
       </motion.div>
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+      />
     </div>
   )
 }
