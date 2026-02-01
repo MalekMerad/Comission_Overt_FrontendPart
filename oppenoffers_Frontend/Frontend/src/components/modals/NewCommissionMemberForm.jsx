@@ -6,52 +6,62 @@ export function NewCommissionMemberForm({ newMember, setNewMember, members }) {
 
   // Normalize members (VERY IMPORTANT)
   const normalizedMembers = useMemo(() => {
+    if (!Array.isArray(members)) return [];
     return members
-      ?.filter(Boolean)
+      .filter(Boolean)
       .map(m => ({
-        nom: (m.nom || "").trim(),
-        prenom: (m.prenom || "").trim(),
-        email: m.email || "",
-        fonction: m.fonction || ""
+        nom: (m && m.nom ? m.nom : "").trim(),
+        prenom: (m && m.prenom ? m.prenom : "").trim(),
+        email: (m && m.email) || "",
+        fonction: (m && m.fonction) || ""
       }));
   }, [members]);
 
   // ---- NOM suggestions ----
   const filteredNoms = useMemo(() => {
-    if (!newMember.nom) return [];
-
+    if (!newMember || !newMember.nom) return [];
+    if (!Array.isArray(normalizedMembers)) return [];
     return [
       ...new Set(
         normalizedMembers
           .filter(m =>
-            m.nom.toLowerCase().startsWith(newMember.nom.toLowerCase())
+            m.nom && m.nom.toLowerCase().startsWith(newMember.nom.toLowerCase())
           )
           .map(m => m.nom)
       )
     ];
-  }, [newMember.nom, normalizedMembers]);
+  }, [newMember?.nom, normalizedMembers]);
 
   // ---- PRENOM suggestions ----
   const filteredPrenoms = useMemo(() => {
-    if (!newMember.prenom) return [];
-
+    if (!newMember || !newMember.prenom) return [];
+    if (!Array.isArray(normalizedMembers)) return [];
     return [
       ...new Set(
         normalizedMembers
           .filter(m =>
+            m.prenom &&
             m.prenom.toLowerCase().startsWith(newMember.prenom.toLowerCase())
           )
           .map(m => m.prenom)
       )
     ];
-  }, [newMember.prenom, normalizedMembers]);
+  }, [newMember?.prenom, normalizedMembers]);
 
   // ---- AUTO-FILL email & fonction ----
   useEffect(() => {
-    if (!newMember.nom || !newMember.prenom) return;
+    if (
+      !newMember ||
+      !newMember.nom ||
+      !newMember.prenom ||
+      !Array.isArray(normalizedMembers)
+    )
+      return;
 
     const match = normalizedMembers.find(
       m =>
+        m.nom &&
+        m.prenom &&
         m.nom.toLowerCase() === newMember.nom.toLowerCase() &&
         m.prenom.toLowerCase() === newMember.prenom.toLowerCase()
     );
@@ -63,7 +73,7 @@ export function NewCommissionMemberForm({ newMember, setNewMember, members }) {
         fonction: match.fonction
       }));
     }
-  }, [newMember.nom, newMember.prenom, normalizedMembers, setNewMember]);
+  }, [newMember?.nom, newMember?.prenom, normalizedMembers, setNewMember]);
 
   return (
     <div className="space-y-4">
