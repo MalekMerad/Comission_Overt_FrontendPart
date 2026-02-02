@@ -1,11 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Search, Filter, CheckCircle, Archive } from 'lucide-react';
-import { LotsSubSection } from './LotsSubSection';
-import { AnnouncementSubSection } from './AnnouncementSubSection';
+import { Plus, Archive } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { RetraitModal } from './detailsModal/RetraitModal';
-import { SupplierModals } from "../components/detailsModal/SupplierModals";
-import OperationDetails from './detailsModal/OperationDetails';
 import { getOperations, newOperation, deleteOperationService, manageArchiveOperation } from '../services/operationService';
 import { getAllSuppliers, addSelectedSupplier } from '../services/supplierService';
 import { createRetrait } from '../services/retraitService';
@@ -15,11 +10,17 @@ import { NewOperationForm } from './modals/NewOperationForm';
 import { useToast } from '../hooks/useToast';
 import { getBudgetTypeLabel, getModeAttribuationLabel,
   getTypeTravauxLabel, getStateLabel, formatDate } from '../utils/typeHandler';
+import {SearchBar} from '../components/tools/SearchBar';
+import DropDownFilter from '../components/tools/dropDownFilter'
+
+import { useNavigate } from 'react-router-dom';
 
 export function OperationsSection() {
   const { user } = useAuth();
   const { showToast } = useToast();
   const hasFetchedRef = useRef(false);
+
+  const navigate = useNavigate();
 
   const [operations, setOperations] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
@@ -224,50 +225,42 @@ export function OperationsSection() {
     }
   };
 
-  const handleAddNewSupplier = async () => {
+const handleAddNewSupplier = async () => {
     if (!newSupplier.Email || !newSupplier.Telephone) {
-      showToast('Insere Fournisseur email ou telephone.', 'error');
-      return;
+        showToast('Veuillez insérer un email et un téléphone.', 'error');
+        return;
     }
-  
+
     try {
-      const supplierData = {
-        NomPrenom: newSupplier.NomPrenom,
-        Adresse: newSupplier.Adresse,
-        Telephone: newSupplier.Telephone,
-        Email: newSupplier.Email,
-        adminId: user?.userId || user?.userid,
-      };
-  
-      const result = await addSelectedSupplier(supplierData);
-  
-      if (result.success) {
-        // SUCCESS LOGIC
-        if (result.supplier) {
-          setSuppliers(prev => [...prev, result.supplier]);
+        const supplierData = {
+            NomPrenom: newSupplier.NomPrenom,
+            Adresse: newSupplier.Adresse,
+            Telephone: newSupplier.Telephone,
+            Email: newSupplier.Email,
+            adminId: user?.userId || user?.userid,
+        };
+
+        const result = await addSelectedSupplier(supplierData);
+
+        if (result.success) {
+            await fetchAllSupplier();
+            setShowNewSupplierModal(false);
+            setNewSupplier({ NomPrenom: '', Adresse: '', Telephone: '', Email: '', adminId: user?.userId || '' });
+            showToast('Fournisseur ajouté avec succès.', 'success');
         } else {
-          await fetchAllSupplier();
+            // result.code comes from the Service Layer translation
+            if (result.code === 1004) {
+                showToast(result.message, "warning"); 
+            } else if (result.code === 1005) {
+                showToast(result.message, "warning"); 
+            } else {
+                showToast(result.message || "Erreur lors de l'ajout.", "error");
+            }
         }
-        setShowNewSupplierModal(false);
-        setNewSupplier({
-          NomPrenom: '', Adresse: '', Telephone: '', Email: '', adminId: user?.userId || '',
-        });
-        showToast('Fournisseur ajouté avec succès.', 'success');
-      } else {
-        // ERROR LOGIC: Handle specific codes from api.js
-        if (result.code === 1004) {
-          showToast("Le numéro de téléphone est déjà utilisé.", "warning");
-        } else if (result.code === 1005) {
-          showToast("L'email est déjà utilisé.", "warning");
-        } else {
-          showToast(result.message || "Erreur lors de l'ajout.", "error");
-        }
-      }
     } catch (error) {
-      // This catches unexpected crashes (like validation errors if you use a Yup schema)
-      showToast('Une erreur inattendue est survenue.', 'error');
+        showToast('Une erreur inattendue est survenue.', 'error');
     }
-  };
+};
 
   const handleOpenSupplierModal = (operationId) => {
     setSelectedOperationForSupplier(operationId);
@@ -402,71 +395,32 @@ export function OperationsSection() {
       <div className="max-w-7xl mx-auto space-y-8">
         <section className="bg-white border border-gray-300 rounded shadow-sm">
           <div className="border-b border-gray-300 bg-gray-100 px-6 py-4">
-            <div className="flex justify-between items-center">
-              <button
+            <div className="flex justify-between items-center ">
+                <SearchBar
+                  placeholder={'Num d\'operation ou service ou objet'}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                />
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <DropDownFilter
+                    filterStatus={filterStatus}
+                    setFilterStatus={setFilterStatus}
+                    showFilterDropdown={showFilterDropdown}
+                    setShowFilterDropdown={setShowFilterDropdown}
+                    operations={operations}
+                    fadeOutOps={fadeOutOps}
+                  />
+                </div>
+
+                <div className="relative">
+                <button
                 onClick={() => setShowOperationModal(true)}
-                className="px-4 py-2 bg-slate-700 text-white rounded hover:bg-slate-800 flex items-center gap-2 text-sm disabled:bg-slate-400"
+                className="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-800 flex items-center gap-2 text-sm disabled:bg-slate-400"
                 disabled={isSubmitting}
               >
                 <Plus className="w-4 h-4" /> Ajouter Opération
               </button>
-
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <button
-                    onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white border border-gray-200 rounded-md text-xs hover:bg-gray-50 text-gray-700 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-200"
-                  >
-                    <Filter className="w-3.5 h-3.5 text-gray-400" />
-                    <span className="font-medium tracking-tight">
-                      {filterStatus === 1 ? 'Actives' : 'Archivées'}
-                    </span>
-                  </button>
-                  {showFilterDropdown && (
-                    <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50 overflow-hidden text-left text-xs">
-                      <button
-                        onClick={() => { 
-                          setFilterStatus(1); 
-                          setShowFilterDropdown(false); 
-                        }}
-                        className={`w-full text-left px-3 py-2 flex items-center gap-2 hover:bg-blue-50 focus:bg-blue-100 transition ${filterStatus === 1 ? 'bg-blue-50 text-blue-700' : 'text-gray-700'}`}
-                        style={{ fontSize: '0.83rem' }}
-                      >
-                        <CheckCircle className={`w-3.5 h-3.5 ${filterStatus === 1 ? 'text-blue-600' : 'text-gray-300'}`} />
-                        <span className="font-medium">Actives</span>
-                        <span className="ml-auto text-xs text-gray-500">
-                          ({operations.filter(op => Number(op.StateCode) === 1 && !fadeOutOps[op.NumOperation]).length})
-                        </span>
-                      </button>
-                      <button
-                        onClick={() => { 
-                          setFilterStatus(0); 
-                          setShowFilterDropdown(false); 
-                        }}
-                        className={`w-full text-left px-3 py-2 flex items-center gap-2 hover:bg-orange-50 focus:bg-orange-100 transition ${filterStatus === 0 ? 'bg-orange-50 text-orange-700' : 'text-gray-700'}`}
-                        style={{ fontSize: '0.83rem' }}
-                      >
-                        <Archive className={`w-3.5 h-3.5 ${filterStatus === 0 ? 'text-orange-600' : 'text-gray-300'}`} />
-                        <span className="font-medium">Archivées</span>
-                        <span className="ml-auto text-xs text-gray-500">
-                          ({
-                            operations.filter(op => Number(op.StateCode) === 0).length
-                          })
-                        </span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="N° d'operation ou objet"
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-xl w-64 text-sm focus:ring-2 focus:ring-slate-200 outline-none"
-                  />
                 </div>
               </div>
             </div>
@@ -490,7 +444,9 @@ export function OperationsSection() {
                   operations={filteredOperationsForTable} 
                   handleOpenSupplierModal={handleOpenSupplierModal} 
                   handleDeleteOperation={handleDeleteOperation} 
-                  handleOpenDetailsModal={(op) => { setShowOperationDetails(op); setShowOperationDetailsModal(true); }} 
+                  handleOpenDetailsModal={(op) => {
+                    navigate(`/op/${op.id}`, { state: { operation: op } });
+                  }}
                   filterStatus={filterStatus}
                   handleUnarchiveOperation={handleUnarchiveOperation}
                   rowClassName={rowClassNameForOp}
@@ -498,43 +454,11 @@ export function OperationsSection() {
             )}
           </div>
         </section>
-
-        <LotsSubSection 
-        operations={activeOperations} 
-        refreshTrigger={refreshTrigger} 
-        createLotTrigger={createLotTrigger} 
-        setCreateAnnounceTrigger={setCreateAnnounceTrigger} />
-
-        <AnnouncementSubSection 
-        operations={activeOperations} 
-        refreshTrigger={refreshTrigger}
-        createAnnounceTrigger={createAnnounceTrigger} 
-        setCreateLotTrigger={setCreateLotTrigger}
-        setCreateAnnounceTrigger={setCreateAnnounceTrigger}
-         />
       </div>
 
       <FormModal isOpen={showOperationModal} onClose={() => setShowOperationModal(false)} onSave={handleAddOperation} title="Nouvelle Opération" saveText="Ajouter l'opération" isLoading={isSubmitting}>
           <NewOperationForm newOperationData={newOperationData} setNewOperationData={setNewOperationData} />
       </FormModal>
-
-      {showOperationDetails && (
-        <FormModal isOpen={showOperationDetailsModal} onClose={() => setShowOperationDetailsModal(false)} title="Détails de l'opération" saveText="">
-          <OperationDetails operation={showOperationDetails} />
-        </FormModal>
-      )}
-
-      <SupplierModals
-        showSupplierModal={showSupplierModal} setShowSupplierModal={setShowSupplierModal} suppliers={suppliers}
-        selectedOperationForSupplier={selectedOperationForSupplier} handleAssignSupplier={handleAssignSupplier}
-        showNewSupplierModal={showNewSupplierModal} setShowNewSupplierModal={setShowNewSupplierModal}
-        newSupplier={newSupplier} setNewSupplier={setNewSupplier} handleAddNewSupplier={handleAddNewSupplier}
-      />
-
-      <RetraitModal
-        isOpen={showRetraitModal} numeroRetrait={numeroRetrait} setNumeroRetrait={setNumeroRetrait}
-        onCancel={() => setShowRetraitModal(false)} onConfirm={handleConfirmRetrait}
-      />
     </div>
   );
 }

@@ -60,18 +60,10 @@ export const ForgotPassword = () => {
     try {
       setError(null);
       setLoading(true);
-      const result = await sendResetLinkService(email);
-      if (result && result.id && result.email) {
-        localStorage.setItem('forgotAdminId', result.id);
-        localStorage.setItem('forgotAdminEmail', result.email);
-        return result;
-      } else {
-        throw new Error('Réponse du serveur incomplète.');
-      }
+      await sendResetLinkService(email);
     } catch (err) {
       setError(err.message);
       console.error('ForgotPassword error:', err);
-      return null;
     } finally {
       setLoading(false);
     }
@@ -86,7 +78,7 @@ export const useResetPassword = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const resetPassword = async (adminId, password) => {
+  const resetPassword = async (token, password) => {
     try {
       setError(null);
       setLoading(true);
@@ -94,7 +86,7 @@ export const useResetPassword = () => {
       const response = await fetch(resetPasswordApi, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adminId, password })
+        body: JSON.stringify({ token, password })
       });
 
       const data = await response.json();

@@ -22,7 +22,6 @@ function Login() {
 
   const [showForgotPassword, setShowForgotPassword] = useState(false)
 
-
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
     setFormData((prev) => ({
@@ -36,8 +35,12 @@ function Login() {
     e.preventDefault()
     setIsLoading(true)
     setError('')
-    await loginUser(formData.email, formData.password)
+    const result = await loginUser(formData.email, formData.password)
     setIsLoading(false)
+    if (!loginError && result !== false) {
+      // Le login a réussi, naviguer vers le dashboard
+      navigate('/dashboard')
+    }
   }
 
   useEffect(() => {
@@ -149,6 +152,10 @@ function Login() {
       <ForgotPasswordModal
         isOpen={showForgotPassword}
         onClose={() => setShowForgotPassword(false)}
+        onSubmit={(email) => {
+          console.log('Email envoyé pour réinitialisation :', email)
+          setShowForgotPassword(false)
+        }}
       />
     </div>
   )

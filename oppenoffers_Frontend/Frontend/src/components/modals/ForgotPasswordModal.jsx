@@ -6,7 +6,7 @@ import { useToast } from '../../hooks/useToast';
 
 
 
-function ForgotPasswordModal({ isOpen, onClose}) {
+function ForgotPasswordModal({ isOpen, onClose, onSubmit }) {
   const [email, setEmail] = useState('')
   const [localError, setlocalError] = useState('')
   const { showToast } = useToast();
@@ -20,17 +20,7 @@ function ForgotPasswordModal({ isOpen, onClose}) {
       return
     }
     setlocalError('')
-    const result = await sendResetLink(email);
-    console.debug("ForgotPasswordModal result:", result);
-    if (result && result.id && result.email) {
-      showToast("Le lien de réinitialisation a été envoyé à votre adresse e-mail");
-      setEmail('');
-      onClose && onClose();
-    } else if (error) {
-      setlocalError(error);
-    } else {
-      setlocalError("Une erreur est survenue lors de l'envoi du lien de réinitialisation.");
-    }
+    await sendResetLink(email);
      showToast("Le lien de réinitialisation a été envoyé à votre adresse e-mail")
   }
 

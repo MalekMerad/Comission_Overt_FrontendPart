@@ -43,8 +43,8 @@ export function CommissionMembersTable({ members, handleOpenModal, handleDeleteM
             </tr>
           </thead>
           <tbody className="bg-white">
-            {currentMembers.map((member, index) => (
-              <tr key={index} className="hover:bg-gray-50 transition-colors">
+            {currentMembers.map((member) => (
+              <tr key={member.id} className="hover:bg-gray-50 transition-colors">
                 <td className="border border-gray-300 px-4 py-2 text-sm">{member.prenom} {member.nom}</td>
                 <td className="border border-gray-300 px-4 py-2 text-sm">{member.fonction}</td>
                 <td className="border border-gray-300 px-4 py-2 text-sm">

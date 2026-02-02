@@ -11,7 +11,6 @@ export default function ResetPasswordPage() {
   const [resetToken, setResetToken] = useState("");
   const [localError, setLocalError] = useState("");
   const { showToast } = useToast();
-  const adminId = localStorage.getItem('forgotAdminId');
   
 
   const [loading, setLoading] = useState(false);
@@ -35,14 +34,6 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setLocalError("");
 
-    
-    if(!adminId){
-      showToast('Vous devez être authentifié pour réinitialiser le mot de passe');
-      localStorage.clear();
-      navigate('/invalid');
-      return;
-    } 
-
     if (!password || !confirmPassword) {
       setLocalError("Tous les champs sont obligatoires");
       return;
@@ -60,9 +51,7 @@ export default function ResetPasswordPage() {
 
     try{
       setLoading(true);
-      await resetPassword (adminId, password);
-      //REMOVE THE ADMIN ID AFTER THE PASSWORD RECOVER
-      localStorage.clear();
+      await resetPassword (resetToken, password);
       setLoading(false);
       if(!error) {
         showToast("Le mot de passe a été modifié avec succès");

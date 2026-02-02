@@ -13,14 +13,5 @@ export const sendResetLinkService = async (email) => {
     throw new Error(data.error || data.message || 'Failed to send reset link');
   }
 
-  if (!data.adminData || !data.adminData.id || !data.adminData.email) {
-    throw new Error('Invalid admin data received from server.');
-  }
-
-  return {
-    id: data.adminData.id,
-    email: data.adminData.email,
-    resetLink: data.resetLink,
-    message: data.message,
-  };
+  return data;
 };

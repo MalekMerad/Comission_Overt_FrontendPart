@@ -12,6 +12,8 @@ import { Administrator } from './pages/Administrator';
 import PrivateRoute from './components/PrivateRoute';
 import NotAuthenticated from './pages/NotAuthenticated';
 import ResetPassword from './pages/ResetPasswordModal';
+import Dashboard from './pages/dashbord';
+import OperationDetails from './pages/OperationDetails';
 
 function App() {
   const router = createBrowserRouter([
@@ -24,6 +26,10 @@ function App() {
       element: <ResetPassword />,
     },
     {
+      path: '/dashboard',
+      element: <Dashboard />,
+    },
+    {
       path:'/invalid',
       element : <NotAuthenticated/>
     },
@@ -33,6 +39,10 @@ function App() {
       children: [
         { path: '', element: <Administrator /> },
       ],
+    },
+    {
+      path: '/op/:id',
+      element: <OperationDetails />,
     },
     { path: '*', element: <NotFound /> },
   ]);

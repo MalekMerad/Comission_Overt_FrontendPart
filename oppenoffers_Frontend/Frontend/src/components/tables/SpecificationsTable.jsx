@@ -45,6 +45,7 @@ export function SpecificationsTable({ specifications, handleDeleteRetrait }) {
               <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Nombre d'Opération</th>
               <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Service d'Opération</th>
               <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Objet d'Opération</th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Numero de retrait</th>
               <th className="border border-gray-300 px-4 py-2 text-center text-sm font-semibold text-gray-700">Actions</th>
             </tr>
           </thead>
@@ -72,6 +73,7 @@ export function SpecificationsTable({ specifications, handleDeleteRetrait }) {
                   <td className="border border-gray-300 px-4 py-2 text-sm">{specification.NumeroOperation}</td>
                   <td className="border border-gray-300 px-4 py-2 text-sm">{specification.ServiceOperation}</td>
                   <td className="border border-gray-300 px-4 py-2 text-sm">{specification.ObjectOperation}</td>
+                  <td className="border border-gray-300 px-4 py-2 text-sm">{specification.NumeroRetrait}</td>
                   <td className="border border-gray-300 px-4 py-2 text-center">
                     <div className="flex justify-center items-center gap-3">
                       <button

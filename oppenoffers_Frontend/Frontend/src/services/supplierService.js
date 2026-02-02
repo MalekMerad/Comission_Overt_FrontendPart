@@ -105,28 +105,17 @@ export const updateSupplier = async (formData, showToast) => {
             NatureJuridique: formData.NatureJuridique,
             Adresse: formData.Adresse,
             Telephone: formData.Telephone,
+            Rc: formData.Rc,
+            Nif: formData.Nif,
+            Rib: formData.Rib,
             Email: formData.Email,
+            Ai: formData.Ai,
             AgenceBancaire: formData.AgenceBancaire
         };
 
         const res = await api(updateSupplierApi, 'PUT', dataToSend);
 
-        switch (res.code) {
-            case 0:
-                showToast('Fournisseur mis à jour avec succès !', 'success');
-                break;
-            case 1004:
-                showToast('Le téléphone est déjà utilisé.', 'warning');
-                break;
-            case 1007:
-                showToast('L\'email est déjà utilisé.', 'warning');
-                break;
-            case 5000:
-                showToast('Erreur serveur lors de la mise à jour.', 'error');
-                break;
-            default:
-                showToast('Erreur inconnue.', 'error');
-        }
+        showToast(res.message, res.success ? 'success' : 'warning');
 
         return res;
     } catch (error) {
@@ -135,6 +124,7 @@ export const updateSupplier = async (formData, showToast) => {
         return { code: 5000 };
     }
 };
+
 
 export const addSelectedSupplier = async (supplierData) => {
   try {
@@ -146,15 +136,12 @@ export const addSelectedSupplier = async (supplierData) => {
       adminID: supplierData.adminId
     };
 
-    // The api.js helper already handles the status check and JSON parsing
     const res = await api(insertSelectedSupplierApi, 'POST', payload);
 
-    // Simply return the result to the component
     return res; 
     
   } catch (error) {
     console.error('Error inserting selected supplier:', error);
-    // If api.js throws (e.g., network error or non-JSON), return a standard error object
     return { 
       success: false, 
       message: error.message || "Erreur de connexion au serveur." 
