@@ -134,7 +134,7 @@ export function OperationsSection() {
         const result = await newOperation({ ...newOperationData, adminID: user?.userId });
         if (result?.code === 0) {
             showToast('Opération ajoutée!', 'success');
-            await fetchOperations(); // Refresh to get all operations including new one
+            await fetchOperations();
             setNewOperationData({
               NumOperation: '',
               ServContract: '',
@@ -356,10 +356,6 @@ const handleAddNewSupplier = async () => {
     return matchesSearch && matchesStatus;
   });
 
-  // Only active operations (StateCode === 1) for sub-sections
-  const activeOperations = operations.filter(
-    op => Number(op.StateCode) === 1 && !fadeOutOps[op.NumOperation]
-  );
 
   if (loading) return <div className="p-8">Chargement...</div>;
 

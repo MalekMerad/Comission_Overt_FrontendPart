@@ -21,14 +21,18 @@ export const newAnnonce = (formData) => {
     return api(addAnnonceApi, 'POST', formData, annonceSchema);
 };
 
-export const getAllAnnonces = (adminID) => {
+export const getAllAnnonces = (adminID, operationID) => {
     const url = new URL(getAllAnnoncesApi);
     url.searchParams.append('adminID', adminID);
-    
+    url.searchParams.append('operationID', operationID);
+
     return api(url.toString(), 'GET')
         .then(data => {
             if (data.success) {
-                return data.annonces;
+                return {
+                    annonces: data.annonces,
+                    count: data.count
+                };
             } else {
                 throw new Error(data.message || 'Failed to fetch annonces');
             }

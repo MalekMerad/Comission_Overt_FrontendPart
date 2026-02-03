@@ -7,7 +7,10 @@ import { FormModal } from './modals/FormModal';
 import { NewLotForm } from './modals/NewLotForm';
 import { useToast } from '../hooks/useToast';
 
-export function LotsSubSection({ operations , refreshTrigger, createLotTrigger, setCreateAnnounceTrigger}) {
+import {SearchBar} from '../components/tools/SearchBar';
+import DropDownFilter from '../components/tools/dropDownFilter'
+
+export function LotsSubSection({ operationID}) {
   const { user } = useAuth();
   const { showToast } = useToast();
   const [lots, setLots] = useState([]);
@@ -15,13 +18,12 @@ export function LotsSubSection({ operations , refreshTrigger, createLotTrigger, 
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingLot, setEditingLot] = useState(null);
-  const isFlowActive = useRef(false);
   
 
   const [newLot, setNewLot] = useState({
     numero: '',
     designation: '',
-    operationId: '',
+    operationId: operationID,
   });
 
   const mounted = useRef(true);
@@ -32,7 +34,7 @@ export function LotsSubSection({ operations , refreshTrigger, createLotTrigger, 
       if (currentAdmin) {
         setLoading(true);
         try {
-          const response = await getAllLotsService(currentAdmin);
+          const response = await getAllLotsService(currentAdmin,operationID);
           if (mounted.current && response.success && response.data) {
             setLots(response.data);
           } else if (mounted.current && !response.success) {
@@ -51,7 +53,7 @@ export function LotsSubSection({ operations , refreshTrigger, createLotTrigger, 
     };
     fetchLots();
     return () => { mounted.current = false; };
-  }, [refreshTrigger ,user]);
+  }, [operationID]);
 
   // Refetch lots after add/update/delete for real-time state
   const fetchLotsRealtime = async () => {
@@ -59,7 +61,7 @@ export function LotsSubSection({ operations , refreshTrigger, createLotTrigger, 
     if (currentAdmin) {
       setLoading(true);
       try {
-        const response = await getAllLotsService(currentAdmin);
+        const response = await getAllLotsService(currentAdmin,operationID);
         if (response.success && response.data) {
           setLots(response.data);
         } else if (!response.success) {
@@ -76,7 +78,7 @@ export function LotsSubSection({ operations , refreshTrigger, createLotTrigger, 
 
   useEffect(() => {
     fetchLotsRealtime();
-  }, [user]);
+  }, [operationID]);
   
   const handleOpenModal = (lot) => {
     if (lot) {
@@ -84,40 +86,27 @@ export function LotsSubSection({ operations , refreshTrigger, createLotTrigger, 
       setNewLot({
         numero: lot.NumeroLot || '',
         designation: lot.Designation || '',
-        operationId: lot.id_Operation || '',
+        operationId: operationID || '',
       });
     } else {
       setEditingLot(null);
       setNewLot({
         numero: '',
         designation: '',
-        operationId: operations && operations.length > 0 ? operations[0].id : '',
+        operationId: operationID,
       });
     }
     setShowModal(true);
   };
   
-  useEffect(() => {
-    if (createLotTrigger > 0) {
-      isFlowActive.current = true;
-      setShowModal(true);
-      setEditingLot(null); 
-    }
-  }, [createLotTrigger]);
-
   const handleModalClose = () => {
     setShowModal(false);
     setEditingLot(null);
     setNewLot({
       numero: '',
       designation: '',
-      operationId: operations && operations.length > 0 ? operations[0].id : '',
+      operationId: operationID,
     });
-    // Check if the Lot was created for prev Operation and not a current one Dont show Announce 
-    if(isFlowActive.current ){
-      setCreateAnnounceTrigger(prev => prev + 1);
-      isFlowActive.current = false;
-    }
   }
 
 const handleEditLot = async () => {
@@ -143,7 +132,7 @@ const handleAddLot = async () => {
     const lotData = {
       NumeroLot: newLot.numero,
       Designation: newLot.designation,
-      id_Operation: newLot.operationId,
+      id_Operation: operationID,
       adminId: user?.userId || user?.userid
     };
     
@@ -163,7 +152,7 @@ const handleAddLot = async () => {
 
 const handleSaveLot = async () => {
   // Validation: Ensure required fields are present
-  if (!newLot.designation || !newLot.operationId) {
+  if (!newLot.designation || !operationID) {
     showToast('Veuillez remplir tous les champs obligatoires.', 'error');
     return;
   }
@@ -194,20 +183,14 @@ const handleSaveLot = async () => {
     }
   };
 
-  const getOperationNumero = (operationId) => {
-    const operation = operations.find(op => op.id === operationId);
-    return operation ? operation.NumOperation : 'N/A';
-  };
 
   const filteredLots = lots.filter(lot => {
     if (!lot) return false;
     const term = searchTerm.toLowerCase();
     const numeroLot = (lot.NumeroLot || '').toLowerCase();
     const designation = (lot.Designation || '').toLowerCase();
-    const opNumero = getOperationNumero(lot.id_Operation).toLowerCase();
     return numeroLot.includes(term) ||
-           designation.includes(term) ||
-           opNumero.includes(term);
+           designation.includes(term);
   });
 
   if (loading) {
@@ -218,7 +201,7 @@ const handleSaveLot = async () => {
     <>
       <section className="bg-white border border-gray-300 rounded">
         <div className="border-b border-gray-300 bg-gray-100 px-6 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between row-reverse items-center">
             <button
               onClick={() => handleOpenModal()}
               className="px-4 py-2 bg-slate-700 text-white rounded hover:bg-slate-800 flex items-center gap-2 text-sm disabled:bg-slate-400"
@@ -227,23 +210,17 @@ const handleSaveLot = async () => {
               Ajouter Lot
             </button>
 
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                 placeholder="N° d'lot ou N° d'operation"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-xl w-64 text-sm focus:ring-2 focus:ring-slate-200 outline-none"
+            <SearchBar
+              placeholder={'N de Lot ou Designation'}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
               />
-            </div>
           </div>
         </div>
 
         <div className="p-6">
             <LotsTable
               lots={filteredLots}
-              getOperationNumero={getOperationNumero}
               handleOpenModal={handleOpenModal}
               handleDeleteLot={handleDeleteLot}
             />
@@ -259,8 +236,8 @@ const handleSaveLot = async () => {
       >
         <NewLotForm
           newLot={newLot}
+          operationID={operationID}
           setNewLot={setNewLot}
-          operations={operations}
           editingLot={editingLot}
         />
       </FormModal>

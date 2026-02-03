@@ -1,42 +1,24 @@
 import { useEffect, useRef } from "react";
-import {parseDateSafe, formatDateInput,addDays} from '../../utils/dateFormat';
+import {addDays} from '../../utils/dateFormat';
 
-export function NewAnnounceForm({ newAnnouncement, setNewAnnouncement, operations, isEditing }) {
+export function NewAnnounceForm({ newAnnouncement, setNewAnnouncement, isEditing }) {
     const lastAutoUpdateRef = useRef(null);
-    
+
     useEffect(() => {
         const { datePublication, delai } = newAnnouncement;
-    
+
         if (datePublication && delai && /^\d+$/.test(delai)) {
             const calculated = addDays(datePublication, delai);
-    
+
             setNewAnnouncement(n => {
                 lastAutoUpdateRef.current = calculated;
                 return { ...n, dateOuverture: calculated };
             });
         }
     }, [newAnnouncement.datePublication, newAnnouncement.delai]);
-    
 
     return (
         <div className="space-y-4">
-            <div>
-                <label className="block text-sm mb-1">Opération <span className="text-red-500">*</span></label>
-                <select
-                    value={newAnnouncement.operationId}
-                    onChange={e => setNewAnnouncement({ ...newAnnouncement, operationId: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded"
-                    disabled={!!isEditing}
-                >
-                    <option value="" className="cursor-pointer px-4 py-2 text-gray-900 text-sm hover:bg-indigo-50"disabled>Sélectionner une opération</option>
-                    {operations.map((op) => (
-                        <option key={op.id} value={op.id} className="cursor-pointer px-4 py-2 text-gray-900 text-sm hover:bg-indigo-50">
-                            {op.NumOperation} - {op.ServiceDeContract}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
             <div className="grid grid-cols-2 gap-4">
                 <div>
                     <label className="block text-sm mb-1">Numéro d'Annonce <span className="text-red-500">*</span></label>
@@ -88,7 +70,7 @@ export function NewAnnounceForm({ newAnnouncement, setNewAnnouncement, operation
                         value={newAnnouncement.dateOuverture}
                         onChange={e => {
                             setNewAnnouncement({ ...newAnnouncement, dateOuverture: e.target.value });
-                            lastAutoUpdateRef.current = null; 
+                            lastAutoUpdateRef.current = null;
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded"
                     />

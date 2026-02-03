@@ -7,7 +7,7 @@ import { FormModal } from "./modals/FormModal";
 import { UpdateSupplierForm } from "./modals/UpdateSupplierForm";
 import { useToast } from '../hooks/useToast';
 
-export function SuppliersSection() {
+export function SuppliersSection({operationID}) {
   const { user } = useAuth();
   const { showToast } = useToast();
 

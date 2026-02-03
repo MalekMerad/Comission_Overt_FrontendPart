@@ -16,11 +16,17 @@ export const addNewLotService = (formData) => {
     return api(addLotApi, 'POST', formData, lotSchema);
 };
 
-export const getAllLotsService = (adminID) => {
+export const getAllLotsService = (adminID, operationID) => {
+    console.log("Calling getAllLotsService with adminID:", adminID, "and operationID:", operationID);
+
     if (!adminID) {
         return Promise.reject(new Error('adminID is required'));
     }
-    const urlWithParams = `${getAllLotsApi}?adminID=${encodeURIComponent(adminID)}`;
+    if (!operationID) {
+        return Promise.reject(new Error('operationID is required'));
+    }
+    const urlWithParams = `${getAllLotsApi}?adminID=${encodeURIComponent(adminID)}&operationID=${encodeURIComponent(operationID)}`;
+
     return api(urlWithParams, 'GET');
 };
 

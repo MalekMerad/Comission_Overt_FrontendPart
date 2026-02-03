@@ -7,7 +7,11 @@ import { FormModal } from './modals/FormModal';
 import { NewAnnounceForm } from './modals/NewAnnounceForm';
 import { useToast } from '../hooks/useToast';
 
-export function AnnouncementSubSection({ operations, refreshTrigger, createAnnounceTrigger, setCreateLotTrigger, setCreateAnnounceTrigger }) {
+import { SearchBar } from './tools/SearchBar';
+import DropDownFilter from './tools/dropDownFilter';
+
+// operationID is passed as a prop
+export function AnnouncementSubSection({ operationID }) {
   const { user } = useAuth();
   const { showToast } = useToast();
   const [announcements, setAnnouncements] = useState([]);
@@ -15,11 +19,11 @@ export function AnnouncementSubSection({ operations, refreshTrigger, createAnnou
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
-  
+
   // Archive/Filter States
-  const [filterStatus, setFilterStatus] = useState(1); // 1 = Active, 0 = Archived
+  const [filterStatus, setFilterStatus] = useState(1);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  
+
   // For animating deleted rows
   const [fadeOutAnns, setFadeOutAnns] = useState({});
   const [stats, setStats] = useState({ active: 0, archived: 0 });
@@ -27,7 +31,7 @@ export function AnnouncementSubSection({ operations, refreshTrigger, createAnnou
   const intervalRef = useRef(null);
 
   const [newAnnouncement, setNewAnnouncement] = useState({
-    operationId: '',
+    operationId: operationID || '',
     numero: '',
     datePublication: new Date().toISOString().split('T')[0],
     journal: '',
@@ -42,21 +46,13 @@ export function AnnouncementSubSection({ operations, refreshTrigger, createAnnou
       if (!ann) return false;
       return Number(ann.Status) === 1 && !fadeOutAnns[ann.Id];
     }).length;
-    
+
     const archivedCount = announcements.filter(ann => {
       if (!ann) return false;
       return Number(ann.Status) === 0;
     }).length;
-    
+
     setStats({ active: activeCount, archived: archivedCount });
-    
-    console.log('Stats updated:', { active: activeCount, archived: archivedCount });
-    console.log('All announcements:', announcements.map(ann => ({
-      Id: ann.Id,
-      Numero: ann.Numero,
-      Status: ann.Status,
-      StatusType: typeof ann.Status
-    })));
   }, [announcements, fadeOutAnns]);
 
   const fetchAnnouncements = async () => {
@@ -64,32 +60,31 @@ export function AnnouncementSubSection({ operations, refreshTrigger, createAnnou
     if (currentAdmin) {
       setLoading(true);
       try {
-        const response = await getAllAnnonces(currentAdmin);
-        const data = response.annonces || response.data || response; 
-        
-        console.log('Fetched announcements from API:', data);
-        
-        if (Array.isArray(data)) {
-          // Sort announcements: active first, then by date
-          const sortedData = [...data].sort((a, b) => {
-            // Active announcements first
-            if (Number(a.Status) !== Number(b.Status)) {
-              return Number(b.Status) - Number(a.Status);
-            }
-            // Then by opening date (most recent first)
-            if (a.Date_Overture && b.Date_Overture) {
-              return new Date(b.Date_Overture) - new Date(a.Date_Overture);
-            }
-            return 0;
-          });
-          
-          setAnnouncements(sortedData);
-        } else {
-          setAnnouncements([]);
-        }
+        const response = await getAllAnnonces(currentAdmin, operationID);
+        const data = response.annonces || response.data || response;
+
+        // Only keep announcements for the current operationID
+        const filteredByOperation = Array.isArray(data)
+          ? data.filter(a => String(a.Id_Operation) === String(operationID))
+          : [];
+
+        // Sort announcements: active first, then by date
+        const sortedData = [...filteredByOperation].sort((a, b) => {
+          if (Number(a.Status) !== Number(b.Status)) {
+            return Number(b.Status) - Number(a.Status);
+          }
+          if (a.Date_Overture && b.Date_Overture) {
+            return new Date(b.Date_Overture) - new Date(a.Date_Overture);
+          }
+          return 0;
+        });
+
+        setAnnouncements(sortedData);
+
       } catch (error) {
         console.error('Error fetching announcements:', error);
         showToast('Impossible de charger les annonces.', 'error');
+        setAnnouncements([]);
       } finally {
         setLoading(false);
       }
@@ -109,60 +104,57 @@ export function AnnouncementSubSection({ operations, refreshTrigger, createAnnou
       return; // Silent fail for background check
     }
 
+    // Only announcements that match our operationID
+    data = data.filter(a => String(a.Id_Operation) === String(operationID));
+
     const now = new Date();
     const expiredAnns = [];
 
     for (const ann of data) {
       if (!ann.Date_Overture || !ann.Heure_Ouverture) continue;
-      
+
       try {
         const datePart = ann.Date_Overture.split('T')[0];
         const overtureDateTime = new Date(`${datePart}T${ann.Heure_Ouverture}`);
 
         if (overtureDateTime instanceof Date && !isNaN(overtureDateTime.getTime())) {
-          if (now >= overtureDateTime && Number(ann.Status) === 1) { // Only check active announcements
+          if (now >= overtureDateTime && Number(ann.Status) === 1) { // Only check active
             expiredAnns.push(ann);
           }
         }
       } catch (err) {
-        console.error("Parsing error for announcement:", ann.Numero);
+        // Parsing error
       }
     }
 
     // Archive expired announcements
     for (const ann of expiredAnns) {
       try {
-        // Start fade-out animation for UI
         setFadeOutAnns(prev => ({ ...prev, [ann.Id]: true }));
-        
-        // Wait for animation
+
         setTimeout(async () => {
           try {
-            // Call delete API (which archives)
             await deleteAnnonce(ann.Id);
-            
-            // Update local state immediately for better UX
-            setAnnouncements(prev => 
-              prev.map(item => 
-                item.Id === ann.Id 
+
+            setAnnouncements(prev =>
+              prev.map(item =>
+                item.Id === ann.Id
                   ? { ...item, Status: 0 } // Mark as archived
                   : item
               )
             );
-            
-            // Clear fade-out effect
+
             setFadeOutAnns(prev => {
               const newState = { ...prev };
               delete newState[ann.Id];
               return newState;
             });
-            
+
             showToast(
               `Annonce N°${ann.Numero} archivée automatiquement - date d'ouverture atteinte.`,
               'warning'
             );
           } catch (e) {
-            // Revert fade-out if API fails
             setFadeOutAnns(prev => {
               const newState = { ...prev };
               delete newState[ann.Id];
@@ -172,7 +164,7 @@ export function AnnouncementSubSection({ operations, refreshTrigger, createAnnou
           }
         }, 400);
       } catch (e) {
-        console.error('Error processing expired announcement:', e);
+        // Error processing expired announcement
       }
     }
   };
@@ -182,10 +174,8 @@ export function AnnouncementSubSection({ operations, refreshTrigger, createAnnou
     const userId = user?.userId || user?.userid;
     if (!userId) return;
 
-    // Initial check
     checkAndArchiveExpiredAnnouncements();
 
-    // Set up interval for periodic checks
     intervalRef.current = setInterval(() => {
       checkAndArchiveExpiredAnnouncements();
     }, 60000);
@@ -195,26 +185,29 @@ export function AnnouncementSubSection({ operations, refreshTrigger, createAnnou
         clearInterval(intervalRef.current);
       }
     };
-  }, [user?.userId, user?.userid]);
+  }, [user?.userId, user?.userid, operationID]);
 
-  // Fetch announcements on mount and when refreshTrigger changes
-  useEffect(() => { 
-    fetchAnnouncements(); 
-  }, [refreshTrigger, user]);
-
-  // Clean up fade-out effects when announcements change
+  // Fetch announcements on mount and when user or operationID changes
   useEffect(() => {
-    // Remove any fade-out effects that don't correspond to existing announcements
+    fetchAnnouncements();
+    // Reset modal form to use correct operationID when operationID changes
+    setNewAnnouncement((prev) => ({
+      ...prev,
+      operationId: operationID || '',
+    }));
+  }, [operationID]);
+
+  useEffect(() => {
     setFadeOutAnns(prev => {
       const announcementIds = new Set(announcements.map(ann => ann?.Id));
       const newFadeOutAnns = {};
-      
+
       Object.keys(prev).forEach(id => {
         if (announcementIds.has(parseInt(id))) {
           newFadeOutAnns[id] = true;
         }
       });
-      
+
       return newFadeOutAnns;
     });
   }, [announcements]);
@@ -234,92 +227,75 @@ export function AnnouncementSubSection({ operations, refreshTrigger, createAnnou
     } else {
       setEditingAnnouncement(null);
       setNewAnnouncement({
-        operationId: operations?.[0]?.id || '',
+        operationId: operationID || '',
         numero: '',
         datePublication: new Date().toISOString().split('T')[0],
         journal: '',
         delai: '',
         dateOuverture: '',
-        heureOuverture : '',
+        heureOuverture: '',
       });
     }
     setShowModal(true);
   };
 
-  useEffect(() => {
-    if (createAnnounceTrigger > 0) {
-      handleOpenModal(); 
-    }
-    // Reset both triggers to 0 after being done 
-    setCreateAnnounceTrigger(0);
-    setCreateLotTrigger(0);
-  }, [createAnnounceTrigger]);
-
   const handleSaveAnnouncement = async () => {
     const formData = {
-        Id_Operation: newAnnouncement.operationId,
-        Numero: newAnnouncement.numero,
-        Date_Publication: newAnnouncement.datePublication,
-        Journal: newAnnouncement.journal,
-        Delai: newAnnouncement.delai,
-        Date_Overture: newAnnouncement.dateOuverture,
-        Heure_Ouverture : newAnnouncement.heureOuverture,
-        adminId: user?.userId || user?.userid
+      Id_Operation: newAnnouncement.operationId,
+      Numero: newAnnouncement.numero,
+      Date_Publication: newAnnouncement.datePublication,
+      Journal: newAnnouncement.journal,
+      Delai: newAnnouncement.delai,
+      Date_Overture: newAnnouncement.dateOuverture,
+      Heure_Ouverture: newAnnouncement.heureOuverture,
+      adminId: user?.userId || user?.userid
     };
 
     try {
-        let result;
-        if (editingAnnouncement) {
-            result = await updateAnnonce({ ...formData, Id: editingAnnouncement.Id });
-        } else {
-            result = await newAnnonce(formData);
-        }
+      let result;
+      if (editingAnnouncement) {
+        result = await updateAnnonce({ ...formData, Id: editingAnnouncement.Id });
+      } else {
+        result = await newAnnonce(formData);
+      }
 
-        if (result.success) {
-            await fetchAnnouncements(); 
-            setShowModal(false);
-            showToast('Succès!', 'success');
-        }
-    } catch (error) { 
-      showToast('Erreur lors de l\'enregistrement', 'error'); 
+      if (result.success) {
+        await fetchAnnouncements();
+        setShowModal(false);
+        showToast('Succès!', 'success');
+      }
+    } catch (error) {
+      showToast('Erreur lors de l\'enregistrement', 'error');
     }
   };
 
-  const getOperationNumero = (operationId) => {
-    const operation = operations.find(op => String(op.id) === String(operationId));
-    return operation ? operation.NumOperation : 'N/A';
-  };
+
 
   const handleDeleteAnnouncement = async (id) => {
     try {
-      // Start fade-out animation
       setFadeOutAnns(prev => ({ ...prev, [id]: true }));
-      
+
       const result = await deleteAnnonce(id);
-      
+
       if (result.success) {
-        // Wait for animation to complete
         setTimeout(() => {
-          // Update local state immediately for better UX
-          setAnnouncements(prev => 
-            prev.map(ann => 
-              ann.Id === id 
-                ? { ...ann, Status: 0 } // Mark as archived
+          setAnnouncements(prev =>
+            prev.map(ann =>
+              ann.Id === id
+                ? { ...ann, Status: 0 }
                 : ann
             )
           );
-          
-          // Clear fade-out effect
+
           setFadeOutAnns(prev => {
             const newState = { ...prev };
             delete newState[id];
             return newState;
           });
-          
+
           showToast('Annonce archivée avec succès.', 'success');
         }, 400);
       } else {
-        // If API call fails, revert fade-out
         setFadeOutAnns(prev => {
           const newState = { ...prev };
           delete newState[id];
@@ -337,48 +313,35 @@ export function AnnouncementSubSection({ operations, refreshTrigger, createAnnou
     }
   };
 
-
   const filteredAnnouncements = announcements.filter(ann => {
     if (!ann || !ann.Id) return false;
-    
-    // Debug each announcement
     const annStatus = ann.Status !== undefined ? Number(ann.Status) : null;
     const currentFilter = Number(filterStatus);
-    
+
     // Filter by status
     if (annStatus !== currentFilter) {
       return false;
     }
-    
-    // Apply fade-out filter for active view (only hide if actively being archived)
+    // Fade-out filter for actives
     if (fadeOutAnns[ann.Id] && filterStatus === 1) {
       return false;
     }
-    
-    // Apply search filter
+
+    // In this case, let's just allow searching by operationId, journal or numero directly
     const term = searchTerm.trim().toLowerCase();
-    const opNum = getOperationNumero(ann.Id_Operation).toLowerCase();
+    const opId = (ann.Id_Operation || '').toString().toLowerCase();
     const journal = (ann.Journal || '').toLowerCase();
     const annNum = (ann.Numero || '').toLowerCase();
 
     const matchesSearch = (
-      opNum.includes(term) ||
+      opId.includes(term) ||
       journal.includes(term) ||
       annNum.includes(term)
     );
-    
-    console.log('Search match:', {
-      term,
-      opNum,
-      journal,
-      annNum,
-      matchesSearch
-    });
-    
+
     return matchesSearch;
   });
 
-  // Row class name for fade-out animation
   const rowClassNameForAnn = (ann) => {
     if (fadeOutAnns[ann.Id]) {
       return 'fade-out-row fading';
@@ -399,64 +362,27 @@ export function AnnouncementSubSection({ operations, refreshTrigger, createAnnou
             >
               <Plus className="w-4 h-4" /> Ajouter Annonce
             </button>
-
             <div className="flex items-center gap-3">
-              {/* Filter Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white border border-gray-200 rounded-md text-xs hover:bg-gray-50 text-gray-700 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-200"
-                >
-                  <Filter className="w-3.5 h-3.5 text-gray-400" />
-                  <span className="font-medium tracking-tight">
-                    {filterStatus === 1 ? 'Actives' : 'Archivées'}
-                  </span>
-                </button>
-                {showFilterDropdown && (
-                  <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50 overflow-hidden text-left text-xs">
-                    <button
-                      onClick={() => { 
-                        setFilterStatus(1); 
-                        setShowFilterDropdown(false); 
-                      }}
-                      className={`w-full text-left px-3 py-2 flex items-center gap-2 hover:bg-blue-50 focus:bg-blue-100 transition ${filterStatus === 1 ? 'bg-blue-50 text-blue-700' : 'text-gray-700'}`}
-                      style={{ fontSize: '0.83rem' }}
-                    >
-                      <CheckCircle className={`w-3.5 h-3.5 ${filterStatus === 1 ? 'text-blue-600' : 'text-gray-300'}`} />
-                      <span className="font-medium">Actives</span>
-                      <span className="ml-auto text-xs text-gray-500">
-                        ({stats.active})
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => { 
-                        setFilterStatus(0); 
-                        setShowFilterDropdown(false); 
-                      }}
-                      className={`w-full text-left px-3 py-2 flex items-center gap-2 hover:bg-orange-50 focus:bg-orange-100 transition ${filterStatus === 0 ? 'bg-orange-50 text-orange-700' : 'text-gray-700'}`}
-                      style={{ fontSize: '0.83rem' }}
-                    >
-                      <Archive className={`w-3.5 h-3.5 ${filterStatus === 0 ? 'text-orange-600' : 'text-gray-300'}`} />
-                      <span className="font-medium">Archivées</span>
-                      <span className="ml-auto text-xs text-gray-500">
-                        ({stats.archived})
-                      </span>
-                    </button>
-                  </div>
-                )}
-              </div>
+              <DropDownFilter
+                filterStatus={filterStatus}
+                setFilterStatus={setFilterStatus}
+                showFilterDropdown={showFilterDropdown}
+                setShowFilterDropdown={setShowFilterDropdown}
+                operations={[
+                  ...announcements.map(ann => ({
+                    ...ann,
+                    StateCode: ann.Status,
+                    NumOperation: ann.Id
+                  }))
+                ]}
+                fadeOutOps={fadeOutAnns}
+              />
 
-              {/* Search Bar */}
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="N° d'annonce ou journal"
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-xl w-64 text-sm focus:ring-2 focus:ring-slate-200 outline-none"
-                />
-              </div>
+              <SearchBar
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                placeholder="N° d'annonce, journal ou ID opération"
+              />
             </div>
           </div>
         </div>
@@ -469,35 +395,33 @@ export function AnnouncementSubSection({ operations, refreshTrigger, createAnnou
                 {filterStatus === 1 ? 'Aucune annonce active' : 'Aucune annonce archivée'}
               </p>
               <p className="text-sm">
-                {filterStatus === 1 
+                {filterStatus === 1
                   ? 'Les annonces archivées seront affichées dans la vue "Archivées"'
                   : 'Les annonces actives seront affichées dans la vue "Actives"'}
               </p>
             </div>
           ) : (
-            <AnnouncementsTable 
-              announcements={filteredAnnouncements} 
-              getOperationNumero={getOperationNumero} 
-              handleOpenModal={handleOpenModal} 
-              handleDeleteAnnouncement={handleDeleteAnnouncement} 
+            <AnnouncementsTable
+              announcements={filteredAnnouncements}
+              handleOpenModal={handleOpenModal}
+              handleDeleteAnnouncement={handleDeleteAnnouncement}
               filterStatus={filterStatus}
             />
           )}
         </div>
       </section>
 
-      <FormModal 
-        isOpen={showModal} 
-        onClose={() => setShowModal(false)} 
-        onSave={handleSaveAnnouncement} 
-        title={editingAnnouncement ? "Modifier l'annonce" : 'Nouvelle Annonce'} 
+      <FormModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onSave={handleSaveAnnouncement}
+        title={editingAnnouncement ? "Modifier l'annonce" : 'Nouvelle Annonce'}
         saveText={editingAnnouncement ? 'Modifier' : 'Ajouter'}
       >
-        <NewAnnounceForm 
-          newAnnouncement={newAnnouncement} 
-          setNewAnnouncement={setNewAnnouncement} 
-          operations={operations} 
-          isEditing={editingAnnouncement} 
+        <NewAnnounceForm
+          newAnnouncement={newAnnouncement}
+          setNewAnnouncement={setNewAnnouncement}
+          isEditing={editingAnnouncement}
           announcements={announcements}
         />
       </FormModal>

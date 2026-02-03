@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ConfirmDeleteModal } from "../tools/DeleteConfirmation"; 
 
 
-export function LotsTable({ lots, getOperationNumero, handleOpenModal, handleDeleteLot }) {
+export function LotsTable({ lots, handleOpenModal, handleDeleteLot }) {
     
     const [currentPage, setCurrentPage] = useState(1);
     const rowsPerPage = 6;
@@ -41,7 +41,6 @@ export function LotsTable({ lots, getOperationNumero, handleOpenModal, handleDel
               <tr>
                 <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Numéro</th>
                 <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Désignation</th>
-                <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Opération</th>
                 <th className="border border-gray-300 px-4 py-2 text-center text-sm font-semibold text-gray-700">Actions</th>
               </tr>
             </thead>
@@ -62,22 +61,23 @@ export function LotsTable({ lots, getOperationNumero, handleOpenModal, handleDel
                     <tr key={lotId} className="hover:bg-gray-50 transition-colors">
                       <td className="border border-gray-300 px-4 py-2 text-sm">{lot.NumeroLot}</td>
                       <td className="border border-gray-300 px-4 py-2 text-sm">{lot.Designation}</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">{getOperationNumero(lot.id_Operation)}</td>
                       <td className="border border-gray-300 px-4 py-2 text-center">
-                        <div className="flex justify-center items-center gap-3">
+                        <div className="flex justify-around items-center gap-3">
                           <button
                             onClick={() => handleOpenModal(lot)}
-                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                            className="text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1"
                             title="Modifier"
                           >
                             <Edit2 className="w-4 h-4" />
+                            <span className="text-xs hidden sm:inline">Modifier</span>
                           </button>
                           <button
                             onClick={() => openDeleteModal(lotId)}
-                            className="text-red-600 hover:text-red-800 transition-colors"
+                            className="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1"
                             title="Supprimer"
                           >
                             <Trash2 className="w-4 h-4" />
+                            <span className="text-xs hidden sm:inline">Supprimer</span>
                           </button>
                         </div>
                       </td>
