@@ -17,8 +17,6 @@ export const addNewLotService = (formData) => {
 };
 
 export const getAllLotsService = (adminID, operationID) => {
-    console.log("Calling getAllLotsService with adminID:", adminID, "and operationID:", operationID);
-
     if (!adminID) {
         return Promise.reject(new Error('adminID is required'));
     }

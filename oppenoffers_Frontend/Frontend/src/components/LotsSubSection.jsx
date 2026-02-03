@@ -26,35 +26,6 @@ export function LotsSubSection({ operationID}) {
     operationId: operationID,
   });
 
-  const mounted = useRef(true);
-  useEffect(() => {
-    mounted.current = true;
-    const fetchLots = async () => {
-      const currentAdmin = user?.userId || user?.userid;
-      if (currentAdmin) {
-        setLoading(true);
-        try {
-          const response = await getAllLotsService(currentAdmin,operationID);
-          if (mounted.current && response.success && response.data) {
-            setLots(response.data);
-          } else if (mounted.current && !response.success) {
-            showToast('Impossible de charger la liste des lots.', 'error');
-          }
-        } catch (error) {
-          console.error("Failed to fetch lots:", error);
-          if (mounted.current) {
-            showToast('Erreur de connexion au serveur.', 'error');
-          }
-        } finally {
-          if(mounted.current)
-            setLoading(false);
-        }
-      }
-    };
-    fetchLots();
-    return () => { mounted.current = false; };
-  }, [operationID]);
-
   // Refetch lots after add/update/delete for real-time state
   const fetchLotsRealtime = async () => {
     const currentAdmin = user?.userId || user?.userid;
@@ -209,12 +180,6 @@ const handleSaveLot = async () => {
               <Plus className="w-4 h-4" />
               Ajouter Lot
             </button>
-
-            <SearchBar
-              placeholder={'N de Lot ou Designation'}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              />
           </div>
         </div>
 

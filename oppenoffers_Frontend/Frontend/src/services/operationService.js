@@ -5,6 +5,7 @@ const addOperationApi = 'http://localhost:5000/api/opr/addOperation';
 const getAllOperationsApi = 'http://localhost:5000/api/opr/AllOperations';
 const deleteOperationApi = (numOperation) => `http://localhost:5000/api/opr/deleteOperation/${numOperation}`;
 const manageArchiveOperationApi = (id) => `http://localhost:5000/api/opr/manageArchiveOperation/${id}`;
+const getOperationByIdApi = (op) => `http://localhost:5000/api/opr/operationById/${op}`;
 
 const operationSchema = yup.object().shape({
     NumOperation: yup.string().required(),
@@ -72,10 +73,42 @@ export const deleteOperationService = async (numOperation) => {
         error: error.message
       };
     }
-  };
+};
 export const manageArchiveOperation = async (id) => {
     if (!id) {
         return Promise.reject(new Error('Operation id is required'));
     }
     return api(manageArchiveOperationApi(id), 'PATCH');
+};
+
+// Service for /operationById/:op
+export const getOperationByIdService = async (op) => {
+    if (!op) {
+        return Promise.reject(new Error('Operation id is required'));
+    }
+    try {
+        const res = await api(getOperationByIdApi(op), 'GET');
+        if (res.success) {
+            return {
+                success: true,
+                lots: res.lots,
+                announces: res.announces,
+                retraitCahierChargesSupplierIDs: res.retraitCahierChargesSupplierIDs,
+                suppliers: res.suppliers,
+                message: res.message
+            };
+        } else {
+            return {
+                success: false,
+                message: res.message || "Failed to retrieve operation details.",
+                error: res.error
+            };
+        }
+    } catch (error) {
+        return {
+            success: false,
+            message: "Erreur lors de la récupération des détails de l'opération.",
+            error: error.message
+        };
+    }
 };
