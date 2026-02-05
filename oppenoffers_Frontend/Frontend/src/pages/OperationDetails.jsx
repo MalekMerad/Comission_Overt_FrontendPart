@@ -1,68 +1,79 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Hash, Info, List, Megaphone, Users } from "lucide-react";
+import { ArrowLeft, Hash, Info } from "lucide-react";
 import DetailRow from '../components/tools/DetailRow';
+import { DetailsCard } from '../components/tools/DetailsCard';
+
+import { fetchOperationDetails } from '../components/tools/FetchOperationDetails';
 
 import { LotsSubSection } from '../components/LotsSubSection';
-import {AnnouncementSubSection} from '../components/AnnouncementSubSection';
-import {SuppliersSection} from '../components/SuppliersSection';
-
-import { getOperationByIdService } from '../services/operationService'; 
+import {SpecificationsSection} from '../components/SpecificationsSection';
 
 const typeBudgetMap = { 1: 'Equipement', 2: 'Fonctionnement', 3: 'Opérations Hors Budget' };
-const modeAttribuationMap = { 1: "Appel d'Offres Ouvert", 2: "Appel d'Offres Restreint" };
+const modeAttribuationMap = {
+  1: "Appel d'Offres Ouvert",
+  2: "Appel d'Offres Restreint",
+};
 const typeTravauxMap = { 1: 'Travaux', 2: 'Prestations', 3: 'Equipement', 4: 'Etude' };
-const stateMap = { 0: 'Archivé', 1: 'Active', 2: 'En Preparation' };
 
 function formatDate(dateString) {
   if (!dateString) return 'N/A';
   return new Date(dateString).toLocaleDateString('fr-FR', {
     day: '2-digit',
     month: 'short',
-    year: 'numeric'
+    year: 'numeric',
   });
 }
 
-
-const sectionsHolder = [
-  { 
-    title: "Lots", 
-    icon: <List size={14} />, 
-    color: "border-blue-500",
-  },
-  { 
-    title: "Annonces", 
-    icon: <Megaphone size={14} />, 
-    color: "border-amber-500",
-  },
-  { 
-    title: "Fournisseurs", 
-    icon: <Users size={14} />, 
-    color: "border-emerald-500",
-  }
-];
+function formatTime(timeString) {
+  if (!timeString) return '';
+  return new Date(timeString).toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
 const OperationDetails = () => {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  
+
+  // Compute opId ONCE using URL param, location state, or path, to be used everywhere
+  const [opId, setOpId] = useState(() =>
+    id ||
+    location.state?.operation?.id ||
+    location.pathname.match(/(\d+)$/)?.[1] ||
+    null
+  );
+
   const [operation, setOperation] = useState(location.state?.operation || null);
+
+  useEffect(()=>{
+    console.log('In operationDetails.jsx',operation)
+  },[])
+
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
 
-  const fetchOperationDetails = async (opId) => {
+  const [lots, setLots] = useState([]);
+  const [announces, setAnnounces] = useState([]);
+  const [currentAnnounce, setCurrentAnnounce] = useState([]);
+  const [cahierDeCharges, setCahierDeCharges] = useState([]);
+
+  const refreshOperationData = async () => {
+    if (!opId) return;
+    
     setLoading(true);
     try {
-      const res = await getOperationByIdService(opId);
-      if (res.success) {
-        setOperation(prev => ({
-          ...prev,
-          ...res,
-          id: opId 
-        }));
+      const result = await fetchOperationDetails(opId);
+      
+      if (result.success) {
+        setLots(result.lots || []);
+        setAnnounces(result.announces || []);
+        setCahierDeCharges(result.cahierDeCharges || []);
+        setFetchError(null);
       } else {
-        setFetchError(res.message || "Erreur lors du chargement.");
+        setFetchError(result.message);
       }
     } catch (err) {
       setFetchError(err.message);
@@ -70,18 +81,36 @@ const OperationDetails = () => {
       setLoading(false);
     }
   };
-
+  
+  // Update the existing useEffect to use the new function
   useEffect(() => {
-    // Determine the ID: Priority to URL params, then location state, then regex
-    const opId = id || location.state?.operation?.id || location.pathname.match(/(\d+)$/)?.[1];
-
     if (!opId) {
-      setFetchError("Identifiant de l'opération introuvable.");
+      const resolvedId =
+        id ||
+        location.state?.operation?.id ||
+        location.pathname.match(/(\d+)$/)?.[1] ||
+        null;
+      setOpId(resolvedId);
+      if (!resolvedId) {
+        setFetchError("Identifiant de l'opération introuvable.");
+        return;
+      }
+      localStorage.setItem('opId', resolvedId);
+      refreshOperationData();
       return;
     }
+  
+    setFetchError(null);
+    localStorage.setItem('opId', opId);
+    refreshOperationData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opId, id, location.pathname]);
+  // Put in currentAnnounce the only announce with State 1
+  useEffect(() => {
+    const found = announces.filter(ann => ann?.Status === 1);
+    setCurrentAnnounce(found.length > 0 ? found[0] : null);
+  }, [announces]);
 
-    fetchOperationDetails(opId);
-  }, [id, location.pathname]);
 
   if (loading) {
     return (
@@ -105,30 +134,26 @@ const OperationDetails = () => {
 
   return (
     <div className="p-8 max-w-[1600px] mx-auto">
-      <button 
-        onClick={() => navigate(-1)} 
+      <button
+        onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-gray-500 hover:text-slate-800 transition-colors text-xs font-medium mb-6"
       >
         <ArrowLeft size={14} /> Retour aux opérations
       </button>
 
       <div className="flex flex-col lg:flex-row gap-6 items-start">
-        
+
         {/* LEFT SIDEBAR */}
         <aside className="w-full lg:w-80 flex-shrink-0 space-y-4">
-          <section className="bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
-            <div className="border-b border-gray-300 bg-gray-100 px-4 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Hash className="text-slate-500" size={14} />
-                <h2 className="text-xs font-bold text-slate-800 uppercase tracking-tight">Info Opération</h2>
-              </div>
-              <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                operation.StateCode === 1 ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-700'
-              }`}>
-                {stateMap[operation.StateCode] || 'Inconnu'}
-              </span>
-            </div>
-            
+          {/* Operation Card */}
+          <DetailsCard
+            cardTitle="Info Opération"
+            statusCode={operation.StateCode}
+            onValidate={() => {/* TODO: handle validate operation */}}
+            onModify={() => {/* TODO: handle modify operation */}}
+            Icon={Hash}
+            disabled={false}
+          >
             <div className="p-4 bg-white">
               <DetailRow label="Numéro" value={operation.Numero || operation.NumOperation} />
               <DetailRow label="Objet" value={operation.Objet || operation.Objectif} />
@@ -139,40 +164,54 @@ const OperationDetails = () => {
               <DetailRow label="Visa N°" value={operation.NumeroVisa || operation.VisaNumber} />
               <DetailRow label="Date Visa" value={formatDate(operation.VisaDate)} />
             </div>
+          </DetailsCard>
 
-            <div className="p-3 bg-gray-50 border-t border-gray-200 grid grid-cols-2 gap-2">
-               <button className="px-2 py-1.5 bg-white border border-gray-300 text-slate-700 rounded text-[10px] font-bold uppercase hover:bg-gray-100">
-                 Modifier
-               </button>
-               <button className="px-2 py-1.5 bg-slate-700 text-white rounded text-[10px] font-bold uppercase hover:bg-slate-800">
-                 Valider
-               </button>
+          {/* Announce Card */}
+          <DetailsCard
+            cardTitle="Annonce"
+            statusCode={currentAnnounce?.Status}
+            onValidate={() => alert("Validation de l'annonce non implémentée")}
+            onModify={() => {/* TODO: handle modify announce */}}
+            Icon={Info}
+            disabled={operation.Status == 1 ? true : false}
+          >
+            <div className="p-4 bg-white">
+            {currentAnnounce ? (
+                <>
+                      <DetailRow label="Numéro annonce" value={currentAnnounce.Numero} />
+                      <DetailRow label="Journal" value={currentAnnounce.Journal} />
+                      <DetailRow
+                          label="Date publication"
+                          value={currentAnnounce.Date_Publication ? formatDate(currentAnnounce.Date_Publication) : "N/A"}
+                      />
+                      <DetailRow
+                      label="Ouverture"
+                      value={
+                        (currentAnnounce.Date_Overture ? formatDate(currentAnnounce.Date_Overture) : "") +
+                        (currentAnnounce.Heure_Ouverture ? (" à " + formatTime(currentAnnounce.Heure_Ouverture)) : "")
+                      }
+                    />
+                  </>
+              ) : (
+                 <p className="text-gray-400 text-xs italic">Aucune annonce active trouvée.</p>
+              )}  
             </div>
-          </section>
+          </DetailsCard>
         </aside>
 
         {/* RIGHT CONTENT */}
         <main className="flex-1 w-full space-y-6">
-          {
-          sectionsHolder.map((sec) => (
-            <section key={sec.title} className="bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
-              <div className="border-b border-gray-300 bg-gray-100 px-6 py-2 flex items-center gap-2">
-                <div className={`w-1 h-3 ${sec.color} border-l-2`} />
-                <span className="text-slate-500">{sec.icon}</span>
-                <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  {sec.title}
-                </h2>
-              </div>
-              <div className="p-4">
-                {operation ? sec.component : (
-                  <div className="flex items-center gap-2 text-gray-400 italic text-[11px] p-6">
-                    <Info size={14} />
-                    Aucune donnée disponible.
-                  </div>
-                )}
-              </div>
-            </section>
-          ))}
+          <LotsSubSection
+            operationID={opId}
+            Lots={lots}
+            refreshData={refreshOperationData} 
+          />
+
+          <SpecificationsSection
+            operationID={opId}
+            Specifications={cahierDeCharges}
+            refreshData={refreshOperationData} 
+          />
         </main>
       </div>
     </div>

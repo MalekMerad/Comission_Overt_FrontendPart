@@ -50,7 +50,6 @@ export function OperationsTable({ operations, handleOpenSupplierModal, handleDel
                 <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Numéro</th>
                 <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Service</th>
                 <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Objet</th>
-                <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Statut</th>
                 <th className="border border-gray-300 px-4 py-2 text-center text-sm font-semibold text-gray-700">Actions</th>
               </tr>
             </thead>
@@ -70,13 +69,6 @@ export function OperationsTable({ operations, handleOpenSupplierModal, handleDel
                     <td className="border border-gray-300 px-4 py-2 text-sm">{op.NumOperation}</td>
                     <td className="border border-gray-300 px-4 py-2 text-sm">{op.ServiceDeContract}</td>
                     <td className="border border-gray-300 px-4 py-2 text-sm">{op.Objectif}</td>
-                    <td className="border border-gray-300 px-4 py-2 text-sm">
-                      <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-medium ${
-                        op.StateCode === 1 ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
-                      }`}>
-                        {op.State}
-                      </span>
-                    </td>
                     <td className="border border-gray-300 px-4 py-2 text-center">
                       <div className="flex justify-center items-center gap-3">
                         <button

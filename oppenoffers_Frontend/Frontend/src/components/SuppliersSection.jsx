@@ -4,10 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import { getAllSuppliers, newSupplier as newSupplierService, updateSupplier as updateSupplierService, deleteSupplierService } from '../services/supplierService';
 import { SuppliersTable } from './tables/SuppliersTable';
 import { FormModal } from "./modals/FormModal";
-import { UpdateSupplierForm } from "./modals/UpdateSupplierForm";
+import { NewSupplierForm } from "./modals/NewSupplierForm";
 import { useToast } from '../hooks/useToast';
 
-export function SuppliersSection({operationID}) {
+export function SuppliersSection() {
   const { user } = useAuth();
   const { showToast } = useToast();
 
@@ -171,7 +171,7 @@ export function SuppliersSection({operationID}) {
         title={editingSupplier ? "Modifier le fournisseur" : "Nouveau fournisseur"}
         saveText={editingSupplier ? "Modifier" : "Ajouter"}
       >
-        <UpdateSupplierForm newSupplier={newSupplier} setNewSupplier={setNewSupplier}/>
+        <NewSupplierForm newSupplier={newSupplier} setNewSupplier={setNewSupplier}/>
       </FormModal>
     </div>
   );

@@ -1,24 +1,25 @@
-import { useState, useEffect, useRef } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getAllLotsService, addNewLotService, updateLotService, deleteLotService } from '../services/lotService';
+import { addNewLotService, updateLotService, deleteLotService } from '../services/lotService';
 import { LotsTable } from './tables/LotsTable';
 import { FormModal } from './modals/FormModal';
 import { NewLotForm } from './modals/NewLotForm';
 import { useToast } from '../hooks/useToast';
+import { SectionsModal } from '../components/modals/SectionsModal';
 
-import {SearchBar} from '../components/tools/SearchBar';
-import DropDownFilter from '../components/tools/dropDownFilter'
-
-export function LotsSubSection({ operationID}) {
+export function LotsSubSection({ operationID, Lots, refreshData }) {
   const { user } = useAuth();
   const { showToast } = useToast();
-  const [lots, setLots] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingLot, setEditingLot] = useState(null);
-  
+
+  // Run this when the Component is rendered
+  useEffect(() => {
+    if (Lots) {
+      setLoading(false);
+    }
+  }, [Lots]);
 
   const [newLot, setNewLot] = useState({
     numero: '',
@@ -26,126 +27,125 @@ export function LotsSubSection({ operationID}) {
     operationId: operationID,
   });
 
-  // Refetch lots after add/update/delete for real-time state
-  const fetchLotsRealtime = async () => {
-    const currentAdmin = user?.userId || user?.userid;
-    if (currentAdmin) {
-      setLoading(true);
-      try {
-        const response = await getAllLotsService(currentAdmin,operationID);
-        if (response.success && response.data) {
-          setLots(response.data);
-        } else if (!response.success) {
-          showToast('Impossible de charger la liste des lots.', 'error');
-        }
-      } catch (error) {
-        console.error("Failed to fetch lots:", error);
-        showToast('Erreur de connexion au serveur.', 'error');
-      } finally {
-        setLoading(false);
-      }
-    }
-  }
-
+  // Reset form when operationID changes
   useEffect(() => {
-    fetchLotsRealtime();
+    setNewLot(prev => ({
+      ...prev,
+      operationId: operationID,
+    }));
   }, [operationID]);
-  
-  const handleOpenModal = (lot) => {
+
+  const handleOpenModal = (lot = null) => {
+    console.log("Opening modal, lot parameter:", lot);
+    
     if (lot) {
+      // Editing an existing lot
       setEditingLot(lot);
       setNewLot({
         numero: lot.NumeroLot || '',
         designation: lot.Designation || '',
-        operationId: operationID || '',
+        operationId: operationID,
       });
+      console.log("Setting modal for EDITING lot:", lot.NumeroLot);
     } else {
+      // Adding a new lot
       setEditingLot(null);
       setNewLot({
         numero: '',
         designation: '',
         operationId: operationID,
       });
+      console.log("Setting modal for ADDING new lot");
     }
     setShowModal(true);
   };
-  
+
   const handleModalClose = () => {
+    console.log("Closing modal");
     setShowModal(false);
-    setEditingLot(null);
-    setNewLot({
-      numero: '',
-      designation: '',
-      operationId: operationID,
-    });
-  }
-
-const handleEditLot = async () => {
-  try {
- 
-    const result = await updateLotService(editingLot.id, newLot.designation);
-
-    if (result.success) {
-      await fetchLotsRealtime();
-      handleModalClose();
-      showToast('Lot modifié avec succès.', 'success');
-    } else {
-      showToast('Impossible de modifier le lot.', 'error');
-    }
-  } catch (error) {
-    showToast('Erreur lors de la modification du lot.', 'error');
-  }
-};
-
-
-const handleAddLot = async () => {
-  try {
-    const lotData = {
-      NumeroLot: newLot.numero,
-      Designation: newLot.designation,
-      id_Operation: operationID,
-      adminId: user?.userId || user?.userid
-    };
     
-    const result = await addNewLotService(lotData);
-    if (result.success) {
-      await fetchLotsRealtime();
-      handleModalClose();
-      showToast('Lot ajouté avec succès.', 'success');
-    } else {
-      showToast('Impossible d\'ajouter le lot.', 'error');
+    // Clear state after a short delay to ensure modal closes first
+    setTimeout(() => {
+      setEditingLot(null);
+      setNewLot({
+        numero: '',
+        designation: '',
+        operationId: operationID,
+      });
+    }, 100);
+  };
+
+  const handleEditLot = async () => {
+    try {
+      console.log("Editing lot ID:", editingLot.id, "with designation:", newLot.designation);
+      const result = await updateLotService(editingLot.id, newLot.designation);
+
+      if (result.success) {
+        handleModalClose();
+        showToast('Lot modifié avec succès.', 'success');
+        refreshData(); // Refresh parent data
+      } else {
+        showToast('Impossible de modifier le lot.', 'error');
+      }
+    } catch (error) {
+      showToast('Erreur lors de la modification du lot.', 'error');
     }
-  } catch (error) {
-    console.error("Error adding new lot:", error);
-    showToast('Erreur lors de l\'ajout du lot.', 'error');
-  }
-};
+  };
 
-const handleSaveLot = async () => {
-  // Validation: Ensure required fields are present
-  if (!newLot.designation || !operationID) {
-    showToast('Veuillez remplir tous les champs obligatoires.', 'error');
-    return;
-  }
+  const handleAddLot = async () => {
+    try {
+      const lotData = {
+        NumeroLot: newLot.numero,
+        Designation: newLot.designation,
+        id_Operation: operationID,
+        adminId: user?.userId || user?.userid
+      };
+      
+      console.log("Adding new lot:", lotData);
+      const result = await addNewLotService(lotData);
+      
+      if (result.success) {
+        handleModalClose();
+        showToast('Lot ajouté avec succès.', 'success');
+        refreshData();
+      } else {
+        showToast('Impossible d\'ajouter le lot.', 'error');
+      }
+    } catch (error) {
+      console.error("Error adding new lot:", error);
+      showToast('Erreur lors de l\'ajout du lot.', 'error');
+    }
+  };
 
-  if (editingLot) {
-    console.log("Initiating Edit for ID:", editingLot.id);
-    await handleEditLot();
-  } else {
-    if (!newLot.numero) {
-      showToast('Le numéro est obligatoire pour un nouveau lot.', 'error');
+  const handleSaveLot = async () => {
+    console.log("Saving lot, editingLot:", editingLot);
+    
+    // Validation: Ensure required fields are present
+    if (!newLot.designation.trim()) {
+      showToast('La désignation est obligatoire.', 'error');
       return;
     }
-    await handleAddLot();
-  }
-};
+
+    if (editingLot) {
+      console.log("Initiating Edit for ID:", editingLot.id);
+      await handleEditLot();
+    } else {
+      if (!newLot.numero.trim()) {
+        showToast('Le numéro est obligatoire pour un nouveau lot.', 'error');
+        return;
+      }
+      await handleAddLot();
+    }
+  };
 
   const handleDeleteLot = async (id) => {
     try {
+      console.log("Deleting lot ID:", id);
       const result = await deleteLotService(id);
+      
       if (result.success) {
-        await fetchLotsRealtime();
         showToast('Lot supprimé avec succès.', 'success');
+        refreshData(); // Refresh parent data
       } else {
         showToast('Impossible de supprimer le lot.', 'error');
       }
@@ -154,45 +154,31 @@ const handleSaveLot = async () => {
     }
   };
 
-
-  const filteredLots = lots.filter(lot => {
-    if (!lot) return false;
-    const term = searchTerm.toLowerCase();
-    const numeroLot = (lot.NumeroLot || '').toLowerCase();
-    const designation = (lot.Designation || '').toLowerCase();
-    return numeroLot.includes(term) ||
-           designation.includes(term);
-  });
-
   if (loading) {
-    return <div>Chargement des lots...</div>;
+    return <div>Chargement des Lots ...</div>;
   }
 
   return (
     <>
-      <section className="bg-white border border-gray-300 rounded">
-        <div className="border-b border-gray-300 bg-gray-100 px-6 py-4">
-          <div className="flex justify-between row-reverse items-center">
-            <button
-              onClick={() => handleOpenModal()}
-              className="px-4 py-2 bg-slate-700 text-white rounded hover:bg-slate-800 flex items-center gap-2 text-sm disabled:bg-slate-400"
-            >
-              <Plus className="w-4 h-4" />
-              Ajouter Lot
-            </button>
-          </div>
-        </div>
-
-        <div className="p-6">
-            <LotsTable
-              lots={filteredLots}
-              handleOpenModal={handleOpenModal}
-              handleDeleteLot={handleDeleteLot}
-            />
-        </div>
-      </section>
+      <SectionsModal
+        title="Lots"
+        buttonText="Ajouter Lot"
+        onButtonClick={() => {
+          console.log("Add button clicked, should open empty form");
+          handleOpenModal(); // Explicitly call without parameters
+        }}
+        showSearch={false}
+        showFilter={false}
+      >
+        <LotsTable
+          Lots={Lots}
+          handleOpenModal={handleOpenModal}
+          handleDeleteLot={handleDeleteLot}
+        />
+      </SectionsModal>
 
       <FormModal
+        key={editingLot ? `edit-${editingLot.id}` : 'add-new'} // Force re-render with key
         isOpen={showModal}
         onClose={handleModalClose}
         onSave={handleSaveLot}
@@ -201,7 +187,6 @@ const handleSaveLot = async () => {
       >
         <NewLotForm
           newLot={newLot}
-          operationID={operationID}
           setNewLot={setNewLot}
           editingLot={editingLot}
         />

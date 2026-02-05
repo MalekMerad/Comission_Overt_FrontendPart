@@ -4,16 +4,16 @@ import { useState } from "react";
 import { ConfirmDeleteModal } from "../tools/DeleteConfirmation"; 
 
 
-export function LotsTable({ lots, handleOpenModal, handleDeleteLot }) {
+export function LotsTable({ Lots, handleOpenModal, handleDeleteLot }) {
     
     const [currentPage, setCurrentPage] = useState(1);
     const rowsPerPage = 6;
 
     const indexOfLastRow = currentPage * rowsPerPage;
     const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-    const currentLots = lots.slice(indexOfFirstRow, indexOfLastRow);
+    const currentLots = Lots.slice(indexOfFirstRow, indexOfLastRow);
 
-    const totalPages = Math.ceil(lots.length / rowsPerPage);
+    const totalPages = Math.ceil(Lots.length / rowsPerPage);
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedLotId, setSelectedLotId] = useState(null);
@@ -39,9 +39,9 @@ export function LotsTable({ lots, handleOpenModal, handleDeleteLot }) {
           <table className="w-full border-collapse border border-gray-300">
             <thead className="bg-gray-100">
               <tr>
-                <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Numéro</th>
-                <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Désignation</th>
-                <th className="border border-gray-300 px-4 py-2 text-center text-sm font-semibold text-gray-700">Actions</th>
+                <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700 bg-white">Numéro</th>
+                <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700 bg-white">Désignation</th>
+                <th className="border border-gray-300 px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-white">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white">
@@ -62,7 +62,7 @@ export function LotsTable({ lots, handleOpenModal, handleDeleteLot }) {
                       <td className="border border-gray-300 px-4 py-2 text-sm">{lot.NumeroLot}</td>
                       <td className="border border-gray-300 px-4 py-2 text-sm">{lot.Designation}</td>
                       <td className="border border-gray-300 px-4 py-2 text-center">
-                        <div className="flex justify-around items-center gap-3">
+                        <div className="flex justify-around items-center">
                           <button
                             onClick={() => handleOpenModal(lot)}
                             className="text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1"

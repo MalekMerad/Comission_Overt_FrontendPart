@@ -8,10 +8,15 @@ import { OperationsTable } from './tables/OperationsTable';
 import { FormModal } from './modals/FormModal';
 import { NewOperationForm } from './modals/NewOperationForm';
 import { useToast } from '../hooks/useToast';
-import { getBudgetTypeLabel, getModeAttribuationLabel,
-  getTypeTravauxLabel, getStateLabel, formatDate } from '../utils/typeHandler';
-import {SearchBar} from '../components/tools/SearchBar';
-import DropDownFilter from '../components/tools/dropDownFilter'
+import {
+  getBudgetTypeLabel,
+  getModeAttribuationLabel,
+  getTypeTravauxLabel,
+  getStateLabel,
+  formatDate
+} from '../utils/typeHandler';
+import { SearchBar } from '../components/tools/SearchBar';
+import DropDownFilter from '../components/tools/dropDownFilter';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -32,7 +37,7 @@ export function OperationsSection() {
 
   // Filter States
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState(1); 
+  const [filterStatus, setFilterStatus] = useState(2); // 1: Active, 0: Archived, 2: Prepare
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
@@ -48,7 +53,7 @@ export function OperationsSection() {
   const [numeroRetrait, setNumeroRetrait] = useState('');
 
   const [createLotTrigger, setCreateLotTrigger] = useState(0);
-  const [createAnnounceTrigger, setCreateAnnounceTrigger] = useState(0)
+  const [createAnnounceTrigger, setCreateAnnounceTrigger] = useState(0);
 
   const [newOperationData, setNewOperationData] = useState({
     NumOperation: '',
@@ -59,7 +64,7 @@ export function OperationsSection() {
     MethodAttribuation: "Appel d'Offres Ouvert",
     VisaNum: '',
     DateVisa: new Date().toISOString().split('T')[0],
-    adminId: user?.userId || '',
+    adminId: user?.userId || ''
   });
 
   const [newSupplier, setNewSupplier] = useState({
@@ -67,45 +72,45 @@ export function OperationsSection() {
     Adresse: '',
     Telephone: '',
     Email: '',
-    adminId: user?.userId || '',
+    adminId: user?.userId || ''
   });
 
   const fetchOperations = async () => {
     try {
-        setLoading(true);
-        const adminID = user?.userId || user?.userid;
-        if (!adminID) return;
+      setLoading(true);
+      const adminID = user?.userId || user?.userid;
+      if (!adminID) return;
 
-        const operationsData = await getOperations(adminID);
-        const mappedOperations = operationsData.map(op => ({
-            id: op.Id,
-            NumOperation: op.Numero || '', 
-            ServiceDeContract: op.Service_Contractant || '',
-            TypeBudget: getBudgetTypeLabel(op.TypeBudget),
-            TypeBudgetCode: op.TypeBudget,
-            ModeAttribution: getModeAttribuationLabel(op.ModeAttribuation),
-            ModeAttributionCode: op.ModeAttribuation,
-            Objectif: op.Objet || '',  
-            TypeTravail: getTypeTravauxLabel(op.TypeTravaux),
-            TypeTravauxCode: op.TypeTravaux,
-            State: getStateLabel(op.State),
-            StateCode: op.State !== undefined && op.State !== null ? Number(op.State) : 1, // Ensure it's a number
-            VisaNumber: op.NumeroVisa || '',
-            VisaDate: formatDate(op.DateVisa)
-        }));
-        
-        setOperations(mappedOperations);
+      const operationsData = await getOperations(adminID);
+      const mappedOperations = operationsData.map(op => ({
+        id: op.Id,
+        NumOperation: op.Numero || '',
+        ServiceDeContract: op.Service_Contractant || '',
+        TypeBudget: getBudgetTypeLabel(op.TypeBudget),
+        TypeBudgetCode: op.TypeBudget,
+        ModeAttribution: getModeAttribuationLabel(op.ModeAttribuation),
+        ModeAttributionCode: op.ModeAttribuation,
+        Objectif: op.Objet || '',
+        TypeTravail: getTypeTravauxLabel(op.TypeTravaux),
+        TypeTravauxCode: op.TypeTravaux,
+        State: getStateLabel(op.State),
+        StateCode: op.State !== undefined && op.State !== null ? Number(op.State) : 1, // Ensure it's a number
+        VisaNumber: op.NumeroVisa || '',
+        VisaDate: formatDate(op.DateVisa)
+      }));
+
+      setOperations(mappedOperations);
     } catch (error) {
-        showToast('Impossible de charger les opérations.', 'error');
+      showToast('Impossible de charger les opérations.', 'error');
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     if (!hasFetchedRef.current && user?.userId) {
-        fetchOperations();
-        hasFetchedRef.current = true;
+      fetchOperations();
+      hasFetchedRef.current = true;
     }
   }, [user]);
 
@@ -122,39 +127,41 @@ export function OperationsSection() {
     }
   };
 
-  useEffect(() => { fetchAllSupplier(); }, [user]);
+  useEffect(() => {
+    fetchAllSupplier();
+  }, [user]);
 
   const handleAddOperation = async () => {
     if (!newOperationData.NumOperation || !newOperationData.Objectif) {
-        showToast('Veuillez remplir les champs obligatoires.', 'error');
-        return;
+      showToast('Veuillez remplir les champs obligatoires.', 'error');
+      return;
     }
     setIsSubmitting(true);
     try {
-        const result = await newOperation({ ...newOperationData, adminID: user?.userId });
-        if (result?.code === 0) {
-            showToast('Opération ajoutée!', 'success');
-            await fetchOperations();
-            setNewOperationData({
-              NumOperation: '',
-              ServContract: '',
-              Objectif: '',
-              TravalieType: 'Travaux',
-              BudgetType: 'Equipement',
-              MethodAttribuation: "Appel d'Offres Ouvert",
-              VisaNum: '',
-              DateVisa: new Date().toISOString().split('T')[0],
-              adminId: user?.userId || '',
-            });
-            setShowOperationModal(false);
-           setCreateLotTrigger(prev => prev + 1);
-        } else {
-            showToast(result.error || 'Erreur lors de l\'ajout.', 'error');
-        }
+      const result = await newOperation({ ...newOperationData, adminID: user?.userId });
+      if (result?.code === 0) {
+        showToast('Opération ajoutée!', 'success');
+        await fetchOperations();
+        setNewOperationData({
+          NumOperation: '',
+          ServContract: '',
+          Objectif: '',
+          TravalieType: 'Travaux',
+          BudgetType: 'Equipement',
+          MethodAttribuation: "Appel d'Offres Ouvert",
+          VisaNum: '',
+          DateVisa: new Date().toISOString().split('T')[0],
+          adminId: user?.userId || ''
+        });
+        setShowOperationModal(false);
+        setCreateLotTrigger(prev => prev + 1);
+      } else {
+        showToast(result.error || "Erreur lors de l'ajout.", 'error');
+      }
     } catch (error) {
-        showToast('Erreur de connexion.', 'error');
+      showToast('Erreur de connexion.', 'error');
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -162,15 +169,15 @@ export function OperationsSection() {
 
   const handleDeleteOperation = async (numOperation) => {
     setDeletingOp(numOperation);
-  
+
     try {
       // 1. Call the API first (no UI update yet)
       const result = await deleteOperationService(numOperation);
-  
+
       if (result.success) {
         // Only start fade-out animation if successful
         setFadeOutOps(prev => ({ ...prev, [numOperation]: true }));
-        
+
         // Wait for fade-out animation to complete
         setTimeout(() => {
           // Update UI after animation
@@ -180,13 +187,13 @@ export function OperationsSection() {
                 return {
                   ...op,
                   StateCode: 0,
-                  State: getStateLabel(0),
+                  State: getStateLabel(0)
                 };
               }
               return op;
             })
           );
-          
+
           // Clear the fade-out effect
           setFadeOutOps(prev => {
             const p = { ...prev };
@@ -194,78 +201,86 @@ export function OperationsSection() {
             return p;
           });
           setDeletingOp(null);
-          
+
           // Show success toast
           showToast(result.message || 'Opération archivée avec succès.', 'success');
-          
+
           // Trigger refresh if needed
           if (setRefreshTrigger) setRefreshTrigger(prev => prev + 1);
         }, 400); // Duration of fade-out animation
-        
+
       } else {
         // Handle error - no fade-out was shown, just show error
         setDeletingOp(null);
-        
-        console.error("Delete handler error:", result);
-        
+
+        console.error('Delete handler error:', result);
+
         // Show appropriate message based on code
         if (result.code === 1000) {
-          showToast("Impossible d'archiver : des fournisseurs sont déjà liés à cette opération.", 'error');
+          showToast(
+            "Impossible d'archiver : des fournisseurs sont déjà liés à cette opération.",
+            'error'
+          );
         } else {
-          showToast(result.message || 'Erreur lors de l\'archivage.', 'error');
+          showToast(result.message || "Erreur lors de l'archivage.", 'error');
         }
       }
-      
     } catch (error) {
       // Catch any unexpected errors
       setDeletingOp(null);
-      
-      console.error("Unexpected delete handler error:", error);
+
+      console.error('Unexpected delete handler error:', error);
       showToast('Erreur de connexion au serveur.', 'error');
     }
   };
 
-const handleAddNewSupplier = async () => {
+  const handleAddNewSupplier = async () => {
     if (!newSupplier.Email || !newSupplier.Telephone) {
-        showToast('Veuillez insérer un email et un téléphone.', 'error');
-        return;
+      showToast('Veuillez insérer un email et un téléphone.', 'error');
+      return;
     }
 
     try {
-        const supplierData = {
-            NomPrenom: newSupplier.NomPrenom,
-            Adresse: newSupplier.Adresse,
-            Telephone: newSupplier.Telephone,
-            Email: newSupplier.Email,
-            adminId: user?.userId || user?.userid,
-        };
+      const supplierData = {
+        NomPrenom: newSupplier.NomPrenom,
+        Adresse: newSupplier.Adresse,
+        Telephone: newSupplier.Telephone,
+        Email: newSupplier.Email,
+        adminId: user?.userId || user?.userid
+      };
 
-        const result = await addSelectedSupplier(supplierData);
+      const result = await addSelectedSupplier(supplierData);
 
-        if (result.success) {
-            await fetchAllSupplier();
-            setShowNewSupplierModal(false);
-            setNewSupplier({ NomPrenom: '', Adresse: '', Telephone: '', Email: '', adminId: user?.userId || '' });
-            showToast('Fournisseur ajouté avec succès.', 'success');
+      if (result.success) {
+        await fetchAllSupplier();
+        setShowNewSupplierModal(false);
+        setNewSupplier({
+          NomPrenom: '',
+          Adresse: '',
+          Telephone: '',
+          Email: '',
+          adminId: user?.userId || ''
+        });
+        showToast('Fournisseur ajouté avec succès.', 'success');
+      } else {
+        // result.code comes from the Service Layer translation
+        if (result.code === 1004) {
+          showToast(result.message, 'warning');
+        } else if (result.code === 1005) {
+          showToast(result.message, 'warning');
         } else {
-            // result.code comes from the Service Layer translation
-            if (result.code === 1004) {
-                showToast(result.message, "warning"); 
-            } else if (result.code === 1005) {
-                showToast(result.message, "warning"); 
-            } else {
-                showToast(result.message || "Erreur lors de l'ajout.", "error");
-            }
+          showToast(result.message || "Erreur lors de l'ajout.", 'error');
         }
+      }
     } catch (error) {
-        showToast('Une erreur inattendue est survenue.', 'error');
+      showToast('Une erreur inattendue est survenue.', 'error');
     }
-};
+  };
 
   const handleOpenSupplierModal = (operationId) => {
     setSelectedOperationForSupplier(operationId);
     setShowSupplierModal(true);
-    fetchAllSupplier(); 
+    fetchAllSupplier();
   };
 
   const handleAssignSupplier = async (supplierId) => {
@@ -310,16 +325,16 @@ const handleAddNewSupplier = async () => {
       );
       showToast('Erreur lors du désarchivage de l’opération.', 'error');
     }
-  }
+  };
 
   const handleConfirmRetrait = async () => {
     if (!numeroRetrait.trim()) return showToast('Numéro requis', 'error');
     try {
       const result = await createRetrait({
         SupplierID: selectedSupplier,
-        OperationID: selectedOperationForSupplier, 
+        OperationID: selectedOperationForSupplier,
         NumeroRetrait: numeroRetrait,
-        adminId: user?.userId 
+        adminId: user?.userId
       });
       if (result.success) {
         showToast(result.message, 'success');
@@ -329,7 +344,9 @@ const handleAddNewSupplier = async () => {
         await fetchOperations();
         setRefreshTrigger(prev => prev + 1);
       }
-    } catch (error) { showToast('Erreur retrait', 'error'); }
+    } catch (error) {
+      showToast('Erreur retrait', 'error');
+    }
   };
 
   // Filter operations based on search term and status
@@ -343,22 +360,24 @@ const handleAddNewSupplier = async () => {
     }
 
     const term = searchTerm.toLowerCase();
-    const matchesSearch = op.NumOperation?.toLowerCase().includes(term) || 
-                          op.Objectif?.toLowerCase().includes(term) || 
-                          op.ServiceDeContract?.toLowerCase().includes(term) || 
-                          '';
-    
+    const matchesSearch =
+      op.NumOperation?.toLowerCase().includes(term) ||
+      op.Objectif?.toLowerCase().includes(term) ||
+      op.ServiceDeContract?.toLowerCase().includes(term) ||
+      '';
+
     // Ensure we compare numbers properly
     const stateCode = Number(op.StateCode);
     const currentFilter = Number(filterStatus);
+
+    // Filter logic for 3 states:
+    // 1 => Active, 0 => Archived, 2 => Prepare
     const matchesStatus = stateCode === currentFilter;
-    
+
     return matchesSearch && matchesStatus;
   });
 
-
   if (loading) return <div className="p-8">Chargement...</div>;
-
 
   const fadeOutStyle = (
     <style>
@@ -385,6 +404,32 @@ const handleAddNewSupplier = async () => {
     return 'fade-out-row'; // default
   };
 
+  // Text and helper for empty state and hint
+  function getEmptyStateText(filterStatus) {
+    if (filterStatus === 1) {
+      return {
+        title: 'Aucune opération active',
+        hint: 'Les opérations archivées ou en préparation seront affichées dans les vues concernées'
+      };
+    } else if (filterStatus === 0) {
+      return {
+        title: 'Aucune opération archivée',
+        hint: 'Les opérations actives ou en préparation seront affichées dans leurs vues respectives'
+      };
+    } else if (filterStatus === 2) {
+      return {
+        title: 'Aucune opération en préparation',
+        hint: 'Les opérations actives ou archivées seront affichées dans les vues concernées'
+      };
+    }
+    return {
+      title: 'Aucune opération',
+      hint: ''
+    };
+  }
+
+  const emptyStateText = getEmptyStateText(Number(filterStatus));
+
   return (
     <div className="p-8">
       {fadeOutStyle}
@@ -392,11 +437,11 @@ const handleAddNewSupplier = async () => {
         <section className="bg-white border border-gray-300 rounded shadow-sm">
           <div className="border-b border-gray-300 bg-gray-100 px-6 py-4">
             <div className="flex justify-between items-center ">
-                <SearchBar
-                  placeholder={'Num d\'operation ou service ou objet'}
-                  searchTerm={searchTerm}
-                  setSearchTerm={setSearchTerm}
-                />
+              <SearchBar
+                placeholder={"Num d'opération ou service ou objet"}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+              />
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <DropDownFilter
@@ -408,15 +453,14 @@ const handleAddNewSupplier = async () => {
                     fadeOutOps={fadeOutOps}
                   />
                 </div>
-
                 <div className="relative">
-                <button
-                onClick={() => setShowOperationModal(true)}
-                className="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-800 flex items-center gap-2 text-sm disabled:bg-slate-400"
-                disabled={isSubmitting}
-              >
-                <Plus className="w-4 h-4" /> Ajouter Opération
-              </button>
+                  <button
+                    onClick={() => setShowOperationModal(true)}
+                    className="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-800 flex items-center gap-2 text-sm disabled:bg-slate-400"
+                    disabled={isSubmitting}
+                  >
+                    <Plus className="w-4 h-4" /> Ajouter Opération
+                  </button>
                 </div>
               </div>
             </div>
@@ -427,33 +471,38 @@ const handleAddNewSupplier = async () => {
               <div className="text-center py-12 text-gray-500">
                 <Archive className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                 <p className="text-lg font-medium mb-2">
-                  {filterStatus === 1 ? 'Aucune opération active' : 'Aucune opération archivée'}
+                  {emptyStateText.title}
                 </p>
                 <p className="text-sm">
-                  {filterStatus === 1 
-                    ? 'Les opérations archivées seront affichées dans la vue "Archivées"'
-                    : 'Les opérations actives seront affichées dans la vue "Actives"'}
+                  {emptyStateText.hint}
                 </p>
               </div>
             ) : (
-              <OperationsTable 
-                  operations={filteredOperationsForTable} 
-                  handleOpenSupplierModal={handleOpenSupplierModal} 
-                  handleDeleteOperation={handleDeleteOperation} 
-                  handleOpenDetailsModal={(op) => {
-                    navigate(`/op/${op.id}`, { state: { operation: op } });
-                  }}
-                  filterStatus={filterStatus}
-                  handleUnarchiveOperation={handleUnarchiveOperation}
-                  rowClassName={rowClassNameForOp}
+              <OperationsTable
+                operations={filteredOperationsForTable}
+                handleOpenSupplierModal={handleOpenSupplierModal}
+                handleDeleteOperation={handleDeleteOperation}
+                handleOpenDetailsModal={op => {
+                  navigate(`/op/${op.id}`, { state: { operation: op } });
+                }}
+                filterStatus={filterStatus}
+                handleUnarchiveOperation={handleUnarchiveOperation}
+                rowClassName={rowClassNameForOp}
               />
             )}
           </div>
         </section>
       </div>
 
-      <FormModal isOpen={showOperationModal} onClose={() => setShowOperationModal(false)} onSave={handleAddOperation} title="Nouvelle Opération" saveText="Ajouter l'opération" isLoading={isSubmitting}>
-          <NewOperationForm newOperationData={newOperationData} setNewOperationData={setNewOperationData} />
+      <FormModal
+        isOpen={showOperationModal}
+        onClose={() => setShowOperationModal(false)}
+        onSave={handleAddOperation}
+        title="Nouvelle Opération"
+        saveText="Ajouter l'opération"
+        isLoading={isSubmitting}
+      >
+        <NewOperationForm newOperationData={newOperationData} setNewOperationData={setNewOperationData} />
       </FormModal>
     </div>
   );

@@ -2,36 +2,35 @@ import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { ConfirmDeleteModal } from "../tools/DeleteConfirmation";
 
-export function SpecificationsTable({ specifications, handleDeleteRetrait }) {
+export function SpecificationsTable({ specifications, handleDeleteRetrait, OperationId }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedIds, setSelectedIds] = useState({ supplierId: null, operationId: null });
+  const [selectedSupplierId, setSelectedSupplierId] = useState(null); // Only need supplier ID now
 
   const safeSpecifications = Array.isArray(specifications) ? specifications : [];
 
-  const openDeleteModal = (supplierId, operationId) => {
-    console.log('openDeleteModal called with:', supplierId, operationId);
-    setSelectedIds({ supplierId, operationId });
+  const openDeleteModal = (supplierId) => {
+    setSelectedSupplierId(supplierId);
     setShowDeleteModal(true);
   };
 
   const handleConfirmDelete = () => {
-    if (selectedIds.supplierId && selectedIds.operationId) {
-      handleDeleteRetrait(selectedIds.supplierId, selectedIds.operationId);
-      setSelectedIds({ supplierId: null, operationId: null });
+    if (selectedSupplierId) {
+      // Only pass supplier ID, OperationId is already known in the parent component
+      handleDeleteRetrait(selectedSupplierId);
+      setSelectedSupplierId(null);
       setShowDeleteModal(false);
     }
   };
 
   const handleDeleteClick = (specification) => {
-    const supplierId = specification.Id;
-    const operationId = specification.OperationId;
+    const supplierId = specification.Id; // Get supplier ID from the row
 
-    if (!supplierId || !operationId) {
-      console.error('Missing data for deletion:', specification);
+    if (!supplierId) {
+      console.error('Missing supplier ID for deletion:', specification);
       return;
     }
 
-    openDeleteModal(supplierId, operationId);
+    openDeleteModal(supplierId);
   };
 
   return (
@@ -40,20 +39,17 @@ export function SpecificationsTable({ specifications, handleDeleteRetrait }) {
         <table className="w-full border-collapse border border-gray-300">
           <thead className="bg-gray-100">
             <tr>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Nom & Prénom</th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Contact</th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Nombre d'Opération</th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Service d'Opération</th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Objet d'Opération</th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Numero de retrait</th>
-              <th className="border border-gray-300 px-4 py-2 text-center text-sm font-semibold text-gray-700">Actions</th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700 bg-white">Numéro de retrait</th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700 bg-white">Nom & Prénom</th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700 bg-white">Contact</th>
+              <th className="border border-gray-300 px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-white">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white">
             {safeSpecifications.length === 0 ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={4}
                   className="border border-gray-300 px-4 py-8 text-center text-gray-400 text-sm"
                 >
                   Aucun cahier de charge trouvé.
@@ -62,6 +58,7 @@ export function SpecificationsTable({ specifications, handleDeleteRetrait }) {
             ) : (
               safeSpecifications.map((specification, idx) => (
                 <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                  <td className="border border-gray-300 px-4 py-2 text-sm">{specification.NumeroRetrait}</td>
                   <td className="border border-gray-300 px-4 py-2 text-sm">{specification.NomPrenom}</td>
                   <td className="border border-gray-300 px-4 py-2 text-sm">
                     {specification.Telephone && specification.Telephone.trim().length > 0
@@ -70,19 +67,15 @@ export function SpecificationsTable({ specifications, handleDeleteRetrait }) {
                         ? specification.Email
                         : '/')}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2 text-sm">{specification.NumeroOperation}</td>
-                  <td className="border border-gray-300 px-4 py-2 text-sm">{specification.ServiceOperation}</td>
-                  <td className="border border-gray-300 px-4 py-2 text-sm">{specification.ObjectOperation}</td>
-                  <td className="border border-gray-300 px-4 py-2 text-sm">{specification.NumeroRetrait}</td>
                   <td className="border border-gray-300 px-4 py-2 text-center">
-                    <div className="flex justify-center items-center gap-3">
+                    <div className="flex justify-around items-center">
                       <button
                         onClick={() => handleDeleteClick(specification)}
-                        className="bg-red-600 hover:bg-red-700 text-white flex items-center justify-center gap-1 px-2 py-1 rounded text-sm transition-colors mx-auto"
+                        className="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1"
                         title="Supprimer"
                       >
-                        <Trash2 className="w-3 h-3" />
-                        <span className="text-sm">Supprime</span>
+                        <Trash2 className="w-4 h-4" />
+                        <span className="text-xs hidden sm:inline">Supprimer</span>
                       </button>
                     </div>
                   </td>

@@ -353,63 +353,37 @@ export function AnnouncementSubSection({ operationID }) {
 
   return (
     <>
-      <section className="bg-white border border-gray-300 rounded shadow-sm">
-        <div className="border-b border-gray-300 bg-gray-100 px-6 py-4">
-          <div className="flex justify-between items-center">
-            <button
-              onClick={() => handleOpenModal()}
-              className="px-4 py-2 bg-slate-700 text-white rounded hover:bg-slate-800 flex items-center gap-2 text-sm"
-            >
-              <Plus className="w-4 h-4" /> Ajouter Annonce
-            </button>
-            <div className="flex items-center gap-3">
-              <DropDownFilter
-                filterStatus={filterStatus}
-                setFilterStatus={setFilterStatus}
-                showFilterDropdown={showFilterDropdown}
-                setShowFilterDropdown={setShowFilterDropdown}
-                operations={[
-                  ...announcements.map(ann => ({
-                    ...ann,
-                    StateCode: ann.Status,
-                    NumOperation: ann.Id
-                  }))
-                ]}
-                fadeOutOps={fadeOutAnns}
-              />
-
-              <SearchBar
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                placeholder="N° d'annonce, journal ou ID opération"
-              />
-            </div>
+      <SectionsModal
+        title="Annonces"
+        icon={<Archive className="w-4 h-4 text-amber-500" />}
+        buttonText="Ajouter Annonce"
+        showSearch={true}
+        showFilter={true}
+        onButtonClick={() => handleOpenModal()}
+        onSearch={val => setSearchTerm(val)}
+        onFilterChange={val => setFilterStatus(Number(val))}
+      >
+        {filteredAnnouncements.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            <Archive className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <p className="text-lg font-medium mb-2">
+              {filterStatus === 1 ? 'Aucune annonce active' : 'Aucune annonce archivée'}
+            </p>
+            <p className="text-sm">
+              {filterStatus === 1
+                ? 'Les annonces archivées seront affichées dans la vue "Archivées"'
+                : 'Les annonces actives seront affichées dans la vue "Actives"'}
+            </p>
           </div>
-        </div>
-
-        <div className="p-6">
-          {filteredAnnouncements.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <Archive className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-lg font-medium mb-2">
-                {filterStatus === 1 ? 'Aucune annonce active' : 'Aucune annonce archivée'}
-              </p>
-              <p className="text-sm">
-                {filterStatus === 1
-                  ? 'Les annonces archivées seront affichées dans la vue "Archivées"'
-                  : 'Les annonces actives seront affichées dans la vue "Actives"'}
-              </p>
-            </div>
-          ) : (
-            <AnnouncementsTable
-              announcements={filteredAnnouncements}
-              handleOpenModal={handleOpenModal}
-              handleDeleteAnnouncement={handleDeleteAnnouncement}
-              filterStatus={filterStatus}
-            />
-          )}
-        </div>
-      </section>
+        ) : (
+          <AnnouncementsTable
+            announcements={filteredAnnouncements}
+            handleOpenModal={handleOpenModal}
+            handleDeleteAnnouncement={handleDeleteAnnouncement}
+            filterStatus={filterStatus}
+          />
+        )}
+      </SectionsModal>
 
       <FormModal
         isOpen={showModal}
