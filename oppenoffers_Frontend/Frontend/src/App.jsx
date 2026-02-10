@@ -9,11 +9,11 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 import { Administrator } from './pages/Administrator';
-import PrivateRoute from './components/PrivateRoute';
+import PrivateRoute from './components/Shared/PrivateRoute';
 import NotAuthenticated from './pages/NotAuthenticated';
-import ResetPassword from './pages/ResetPasswordModal';
+import ResetPassword from './pages/ResetPassword/ResetPasswordModal';
 import Dashboard from './pages/dashbord';
-import OperationDetails from './pages/OperationDetails';
+import OperationDetails from './pages/Operations/OperationDetails';
 
 function App() {
   const router = createBrowserRouter([

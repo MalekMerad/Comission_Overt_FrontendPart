@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { Sidebar } from '../components/Sidebar';
-import { OperationsSection } from '../components/OperationsSection';
-import { SpecificationsSection } from '../components/SpecificationsSection';
-import { SuppliersSection } from '../components/SuppliersSection';
-import { CommissionSection } from '../components/CommissionSection';
-import { EvaluationSection } from '../components/EvaluationSection';
+import { Sidebar } from '../components/Shared/Sidebar';
+import { OperationsSection } from '../components/Operations/OperationsSection';
+import { SpecificationsSection } from '../components/Retriat Cahier de charge/SpecificationsSection';
+import { SuppliersSection } from '../components/Suppliers/SuppliersSection';
+import { CommissionSection } from '../components/CommissionMembres/CommissionSection';
+import { EvaluationSection } from '../components/Evaluation/EvaluationSection';
 
 export function Administrator() {
     const location = useLocation();

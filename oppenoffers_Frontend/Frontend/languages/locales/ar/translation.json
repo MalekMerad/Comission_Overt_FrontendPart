@@ -1,0 +1,135 @@
+{
+  "app": {
+    "title": "طلبات العروض"
+  },
+  "sidebar": {
+    "operations": "إدارة العمليات",
+    "suppliers": "قائمة الممونين",
+    "cahier": "دفتر الشروط",
+    "commission": "لجنة التقييم",
+    "evaluation": "التقييم والتقارير"
+  },
+  "logout": "تسجيل الخروج",
+
+  "operations": {
+    "listTitle": "قائمة العمليات",
+    "operation": "العملية",
+    "searchPlaceholder": "رقم العملية أو المصلحة أو الموضوع",
+    "addOperation": "إضافة عملية",
+    "newOperation": "عملية جديدة",
+    "fillRequiredFields": "يرجى ملء الحقول المطلوبة.",
+    "addedSuccess": "تمت إضافة العملية بنجاح!",
+    "addError": "حدث خطأ أثناء الإضافة.",
+    "connectionError": "خطأ في الاتصال.",
+    "fetchError": "تعذر تحميل العمليات.",
+
+    "archiveSuccess": "تمت أرشفة العملية بنجاح.",
+    "archiveBlocked": "لا يمكن أرشفة العملية: يوجد ممونون مرتبطون بها.",
+    "unarchiveError": "حدث خطأ أثناء إلغاء أرشفة العملية.",
+
+    "number": "الرقم",
+    "service": "الخدمة",
+    "subject": "الموضوع",
+    "name": "الموضوع",
+    "actions": "الإجراءات",
+    "viewDetails": "عرض التفاصيل",
+    "archiveOperation": "أرشفة العملية",
+    "restoreOperation": "استعادة العملية",
+    "archiveConfirmMessage": "هل أنت متأكد أنك تريد أرشفة هذه العملية؟",
+    "restoreConfirmMessage": "هل أنت متأكد أنك تريد استعادة هذه العملية؟",
+    "archive": "أرشفة",
+    "noActiveOperations": "لم يتم العثور على عمليات نشطة.",
+    "noArchivedOperations": "لم يتم العثور على عمليات مؤرشفة.",
+
+    "noActive": "لا توجد عمليات نشطة",
+    "activeHint": "العمليات المؤرشفة أو قيد التحضير ستظهر في الواجهات المخصصة لها",
+    "noArchived": "لا توجد عمليات مؤرشفة",
+    "archivedHint": "العمليات النشطة أو قيد التحضير ستظهر في الواجهات المخصصة لها",
+    "noPrepare": "لا توجد عمليات قيد التحضير",
+    "prepareHint": "العمليات النشطة أو المؤرشفة ستظهر في الواجهات المخصصة لها",
+    "noOperation": "لا توجد عمليات",
+
+    "insertEmailPhone": "يرجى إدخال البريد الإلكتروني ورقم الهاتف.",
+    "supplierAdded": "تمت إضافة الممون بنجاح.",
+
+    "retraitNumberRequired": "الرقم مطلوب",
+    "serverError": "خطأ في الاتصال بالخادم",
+    "retraitError": "خطأ في السحب"
+  },
+
+  "status": {
+    "active": "نشطة",
+    "archived": "مؤرشفة",
+    "preparation": "قيد التحضير",
+    "all": "الكل"
+  },
+
+  "login": {
+    "title": "تسجيل الدخول",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "emailPlaceholder": "أدخل بريدك الإلكتروني",
+    "passwordPlaceholder": "أدخل كلمة المرور",
+    "rememberMe": "تذكرني",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "submit": "دخول",
+    "loading": "جاري تسجيل الدخول...",
+    "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+    "welcomeTitle": "مرحبًا بك في PlisFlow",
+    "welcomeText": "سعداء بعودتك! سجّل الدخول للوصول إلى جميع ميزات المنصة."
+  },
+
+  "loading": "جارٍ التحميل...",
+  
+  "operationDetails": {
+    "back": "رجوع",
+    "close": "إغلاق",
+
+    "operationNotFound": "العملية غير موجودة",
+    "noData": "لا توجد بيانات",
+
+    "operationNumber": "رقم العملية",
+    "object": "الموضوع",
+    "noObject": "لا يوجد موضوع محدد",
+
+    "addAnnouncement": "إضافة إعلان",
+
+    "service": "المصلحة",
+    "type": "النوع",
+    "budget": "الميزانية",
+    "attribution": "طريقة الإسناد",
+    "visaNumber": "رقم التأشيرة",
+    "visaDate": "تاريخ التأشيرة",
+
+    "announcement": "الإعلان",
+    "noAnnouncement": "لا يوجد إعلان نشط",
+
+    "announcementNumber": "رقم الإعلان",
+    "journal": "الجريدة",
+    "publicationDate": "تاريخ النشر",
+
+    "opening": "فتح الأظرفة",
+    "openingAt": "على الساعة",
+    "editAnnouncement": "تعديل الإعلان",
+    "newAnnouncement": "إعلان جديد"
+  },
+  
+  "edit": "تعديل",
+  "add": "إضافة",
+  "cancel": "إلغاء",
+  "closeModal": "إغلاق النافذة",
+  
+  "announceForm": {
+    "numero": "رقم",
+    "numeroPlaceholder": "مثال: 2024/01",
+    "journal": "الجريدة",
+    "journalPlaceholder": "مثال: BOMOP",
+    "datePublication": "تاريخ النشر",
+    "delai": "المهلة",
+    "delaiPlaceholder": "21",
+    "jours": "أيام",
+    "dateOuverture": "تاريخ الفتح",
+    "heureOuverture": "وقت الفتح",
+    "heureOuverturePlaceholder": "ساعة:دقيقة"
+  }
+}

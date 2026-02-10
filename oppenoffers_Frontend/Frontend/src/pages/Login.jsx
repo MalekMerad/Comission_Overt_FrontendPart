@@ -3,13 +3,16 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useLogin } from '../hooks/useLogin'
 import { useAuth } from '../context/AuthContext'
-import TextInput from '../components/FormElements/TextInput'
-import ForgotPasswordModal from '../components/modals/ForgotPasswordModal'
+import TextInput from '../components/Shared/FormElements/TextInput'
+import ForgotPasswordModal from '../components/ResetPassword/ForgotPasswordModal'
+import { useTranslation } from 'react-i18next'
 
 function Login() {
   const navigate = useNavigate()
   const { loginUser, error: loginError } = useLogin()
   const { user } = useAuth()
+  const { t } = useTranslation()
+
 
   const [formData, setFormData] = useState({
     email: '',
@@ -30,18 +33,32 @@ function Login() {
     }))
     if (error) setError('')
   }
-
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError('')
-    const result = await loginUser(formData.email, formData.password)
-    setIsLoading(false)
-    if (!loginError && result !== false) {
-      // Le login a réussi, naviguer vers le dashboard
-      navigate('/dashboard')
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+  
+    try {
+      const result = await loginUser(formData.email, formData.password);
+      setIsLoading(false);
+  
+      console.log("Login result:", result);
+  
+      if (result && result.userId) {
+        console.log("dash: open");
+        navigate('/dashboard');
+      } else {
+        setError(t('login.invalidCredentials'));
+      }
+    } catch (err) {
+      setIsLoading(false);
+      setError(t('login.invalidCredentials'));
+      console.error("Login error:", err); // سجل أي خطأ
     }
-  }
+  };
+  
+  
+  
 
   useEffect(() => {
     if (loginError) {
@@ -65,7 +82,7 @@ function Login() {
           transition={{ delay: 0.2, duration: 0.4 }}
         >
           <h2 className="text-2xl font-bold text-slate-800 mb-6 text-center">
-            Connexion
+            {t('login.title')}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -74,9 +91,9 @@ function Login() {
               name="email"
               value={formData.email}
               onChange={handleInputChange}
-              placeholder="Entrez votre e-mail"
+              placeholder={t('login.emailPlaceholder')}
               required
-              label="Adresse e-mail"
+              label={t('login.email')}
             />
 
             <TextInput
@@ -84,9 +101,9 @@ function Login() {
               name="password"
               value={formData.password}
               onChange={handleInputChange}
-              placeholder="Entrez votre mot de passe"
+              placeholder={t('login.passwordPlaceholder')}
               required
-              label="Mot de passe"
+              label={t('login.password')}
             />
 
             <div className="flex items-center justify-between text-sm">
@@ -98,14 +115,14 @@ function Login() {
                   onChange={handleInputChange}
                   className="accent-slate-600"
                 />
-                Se souvenir de moi
+                {t('login.rememberMe')}
               </label>
               <button
                 type="button"
                 onClick={() => setShowForgotPassword(true)}
                 className="cursor-pointer text-slate-600 hover:underline"
               >
-                Mot de passe oublié ?
+                {t('login.forgotPassword')}
               </button>
             </div>
 
@@ -126,7 +143,7 @@ function Login() {
               whileHover={{ scale: isLoading ? 1 : 1.02 }}
               whileTap={{ scale: isLoading ? 1 : 0.97 }}
             >
-              {isLoading ? 'Connexion...' : 'Se connecter'}
+              {isLoading ? t('login.loading') : t('login.submit')}
             </motion.button>
           </form>
         </motion.div>
@@ -141,11 +158,10 @@ function Login() {
       >
         <div className="max-w-2xl text-center px-12">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            Bienvenue sur PlisFlow
+            {t('login.welcomeTitle')}
           </h1>
           <p className="text-slate-100 text-lg md:text-xl">
-            Nous sommes ravis de vous revoir ! Connectez-vous à votre compte pour accéder 
-            à toutes les fonctionnalités de notre plateforme et poursuivre votre expérience.
+            {t('login.welcomeText')}
           </p>
         </div>
       </motion.div>

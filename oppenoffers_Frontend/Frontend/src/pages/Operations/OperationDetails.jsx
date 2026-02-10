@@ -4,6 +4,12 @@ import { ArrowLeft, Hash, Megaphone, Plus } from "lucide-react";
 import DetailRow from '../../components/Shared/Cards/DetailRowCard';
 import { DetailsCard } from '../../components/Shared/Cards/DetailsCard';
 
+import { updateOperation } from '../../services/Operations/operationService';
+import { FormModal } from '../../components/Shared/FormModal';
+import { NewOperationForm } from '../../components/Operations/NewOperationForm';
+import { useToast } from '../../hooks/useToast';
+import { useAuth } from '../../context/AuthContext';
+
 import { fetchOperationDetails } from '../../components/Operations/FetchOperationDetails';
 
 import { LotsSubSection } from '../../components/Lots/LotsSubSection';
@@ -12,11 +18,6 @@ import { AnnouncementSubSection } from '../../components/Annonces/AnnouncementSu
 
 import { Sidebar } from '../../components/Shared/Sidebar';
 import { useTranslation } from 'react-i18next';
-import { FormModal } from '../../components/Shared/FormModal';
-import { NewOperationForm } from '../../components/Operations/NewOperationForm';
-import { updateOperation } from '../../services/Operations/operationService';
-import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../hooks/useToast';
 
 const typeBudgetMap = { 1: 'Equipement', 2: 'Fonctionnement', 3: 'Opérations Hors Budget' };
 const modeAttribuationMap = {
@@ -48,8 +49,8 @@ const OperationDetails = () => {
   const navigate = useNavigate();
   const announcementRef = useRef();
   const { t } = useTranslation();
-  const { user } = useAuth();
   const { showToast } = useToast();
+  const { user } = useAuth();
 
   // Compute opId ONCE using URL param, location state, or path, to be used everywhere
   const [opId, setOpId] = useState(() =>
@@ -61,166 +62,143 @@ const OperationDetails = () => {
 
   const [operation, setOperation] = useState(location.state?.operation || null);
 
-  useEffect(()=>{
-    console.log('In operationDetails.jsx',operation)
-  },[])
-
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
 
   const [lots, setLots] = useState([]);
   
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState({});
   
   const [announces, setAnnounces] = useState([]);
   const [currentAnnounce, setCurrentAnnounce] = useState([]);
-  const [cahierDeCharges, setCahierDeCharges] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
 
-  // Modal states for editing operation
-  const [showOperationModal, setShowOperationModal] = useState(false);
+  // Add isSubmitting state
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [newOperationData, setNewOperationData] = useState({
-    NumOperation: '',
-    ServContract: '',
-    Objectif: '',
-    TravalieType: 'Travaux',
-    BudgetType: 'Equipement',
-    MethodAttribuation: "Appel d'Offres Ouvert",
-    VisaNum: '',
-    DateVisa: new Date().toISOString().split('T')[0],
-    adminId: user?.userId || ''
-  });
 
   const refreshOperationData = async () => {
     if (!opId) return;
-    
+  
     setLoading(true);
     try {
       const result = await fetchOperationDetails(opId);
-      
-      if (result.success) {
+  
+      if (result.success && result.operation) {
+        console.log('Fetched operation data:', result.operation);
+        setOperation(result.operation);
         setLots(result.lots || []);
         setAnnounces(result.announces || []);
-        setCahierDeCharges(result.cahierDeCharges || []);
+        setSuppliers(result.suppliers || []);
         setFetchError(null);
       } else {
-        setFetchError(result.message);
+        console.error('Failed to fetch operation:', result.message);
+        setFetchError(result.message || 'Failed to fetch operation data');
       }
     } catch (err) {
-      setFetchError(err.message);
+      console.error('Error fetching operation details:', err);
+      setFetchError(err?.message || 'Unexpected error');
     } finally {
       setLoading(false);
     }
   };
   
   useEffect(() => {
-    if (!opId) {
-      const resolvedId =
-        id ||
-        location.state?.operation?.id ||
-        location.pathname.match(/(\d+)$/)?.[1] ||
-        null;
+    const resolvedId = id ||
+      location.state?.operation?.id ||
+      location.pathname.match(/(\d+)$/)?.[1] ||
+      null;
+    
+    if (resolvedId && resolvedId !== opId) {
       setOpId(resolvedId);
-      if (!resolvedId) {
-        setFetchError(t('operationDetails.operationNotFound'));
-        return;
-      }
-      localStorage.setItem('opId', resolvedId);
-      refreshOperationData();
+    }
+    
+    if (!resolvedId) {
+      setFetchError(t('operationDetails.operationNotFound'));
       return;
     }
-  
-    setFetchError(null);
-    localStorage.setItem('opId', opId);
-    refreshOperationData();
-  }, [opId, id, location.pathname]);
+  }, [id, location.pathname, location.state?.operation?.id]);
+
+  // Fetch data when opId changes
+  useEffect(() => {
+    if (opId) {
+      localStorage.setItem('opId', opId);
+      refreshOperationData();
+    }
+  }, [opId]);
 
   useEffect(() => {
     const found = announces.filter(ann => ann?.Status === 1);
     setCurrentAnnounce(found.length > 0 ? found[0] : null);
   }, [announces]);
 
-  // For the Add Annonce button in the header
-  const handleHeaderAddClick = () => {
-    if (announcementRef.current) {
-      announcementRef.current.openAddModal();
-    }
-  };
-
-  // Handle opening modal for editing operation
   const handleOpenEditModal = () => {
-    if (!operation) return;
-    
-    setNewOperationData({
-      NumOperation: operation.Numero || operation.NumOperation || '',
-      ServContract: operation.Service_Contractant || operation.ServiceDeContract || '',
-      Objectif: operation.Objet || operation.Objectif || '',
-      TravalieType: operation.TypeTravauxCode === 1 ? 'Travaux' : 
-                   operation.TypeTravauxCode === 2 ? 'Prestations' :
-                   operation.TypeTravauxCode === 3 ? 'Equipement' : 'Etude',
-      BudgetType: operation.TypeBudgetCode === 1 ? 'Equipement' :
-                 operation.TypeBudgetCode === 2 ? 'Fonctionnement' : 'Opérations Hors Budget',
-      MethodAttribuation: operation.ModeAttributionCode === 1 ? "Appel d'Offres Ouvert" : "Appel d'Offres Restreint",
-      VisaNum: operation.NumeroVisa || operation.VisaNumber || '',
-      DateVisa: operation.DateVisa ? (operation.DateVisa.includes('T') ? operation.DateVisa.split('T')[0] : operation.DateVisa) : new Date().toISOString().split('T')[0],
-      adminId: user?.userId || user?.userid || ''
+    setEditFormData({
+      NumOperation: operation.Numero || operation.NumOperation,
+      ServContract: operation.Service_Contractant || operation.ServiceDeContract,
+      Objectif: operation.Objet || operation.Objectif,
+      TravalieType: operation.TypeTravauxCode ? operation.TypeTravauxCode.toString() : '',
+      BudgetType: operation.TypeBudgetCode ? operation.TypeBudgetCode.toString() : '',
+      MethodAttribuation: operation.ModeAttributionCode ? operation.ModeAttributionCode.toString() : '',
+      VisaNum: operation.NumeroVisa || operation.VisaNumber,
+      DateVisa: operation.DateVisa ? new Date(operation.DateVisa).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      adminId: user?.userId || ''
     });
-    setShowOperationModal(true);
+    setShowEditModal(true);
   };
 
-  // Handle saving operation (update)
-  const handleSaveOperation = async () => {
-    if (!newOperationData.NumOperation || !newOperationData.Objectif) {
-      showToast(t('operations.fillRequiredFields'), 'error');
-      return;
-    }
+  const handleUpdateOperation = async () => {
     setIsSubmitting(true);
     try {
       const formData = {
         Id: opId,
-        NumOperation: newOperationData.NumOperation,
-        ServContract: newOperationData.ServContract,
-        Objectif: newOperationData.Objectif,
-        TravalieType: newOperationData.TravalieType,
-        BudgetType: newOperationData.BudgetType,
-        MethodAttribuation: newOperationData.MethodAttribuation,
-        VisaNum: newOperationData.VisaNum,
-        DateVisa: newOperationData.DateVisa,
-        adminId: user?.userId || user?.userid
+        ...editFormData,
+        adminID: user?.userId
       };
-      
+
+      console.log('📤 Sending update data:', formData);
+
       const result = await updateOperation(formData);
 
       if (result?.success || result?.code === 0) {
-        showToast(t('operations.updatedSuccess', 'Opération modifiée avec succès.'), 'success');
-        setShowOperationModal(false);
-        // Refresh operation data
-        await refreshOperationData();
-        // Update local operation state
+        showToast(t('operations.updatedSuccess'), 'success');
+        setShowEditModal(false);
+        
+        // Update the operation state with the new data immediately
         setOperation(prev => ({
           ...prev,
-          Numero: newOperationData.NumOperation,
-          NumOperation: newOperationData.NumOperation,
-          Service_Contractant: newOperationData.ServContract,
-          ServiceDeContract: newOperationData.ServContract,
-          Objet: newOperationData.Objectif,
-          Objectif: newOperationData.Objectif,
-          TypeTravauxCode: newOperationData.TravalieType === 'Travaux' ? 1 : 
-                          newOperationData.TravalieType === 'Prestations' ? 2 :
-                          newOperationData.TravalieType === 'Equipement' ? 3 : 4,
-          TypeBudgetCode: newOperationData.BudgetType === 'Equipement' ? 1 :
-                         newOperationData.BudgetType === 'Fonctionnement' ? 2 : 3,
-          ModeAttributionCode: newOperationData.MethodAttribuation === "Appel d'Offres Ouvert" ? 1 : 2,
-          NumeroVisa: newOperationData.VisaNum,
-          VisaNumber: newOperationData.VisaNum,
-          DateVisa: newOperationData.DateVisa
+          Numero: formData.NumOperation,
+          NumOperation: formData.NumOperation,
+          Service_Contractant: formData.ServContract,
+          ServiceDeContract: formData.ServContract,
+          Objet: formData.Objectif,
+          Objectif: formData.Objectif,
+          TypeTravauxCode: parseInt(formData.TravalieType) || prev.TypeTravauxCode,
+          TypeBudgetCode: parseInt(formData.BudgetType) || prev.TypeBudgetCode,
+          ModeAttributionCode: parseInt(formData.MethodAttribuation) || prev.ModeAttributionCode,
+          NumeroVisa: formData.VisaNum,
+          VisaNumber: formData.VisaNum,
+          DateVisa: formData.DateVisa,
+          VisaDate: formData.DateVisa
         }));
+        
+        // Also refresh from server to get all data
+        refreshOperationData();
       } else {
-        showToast(result.error || result.message || t('operations.addError'), 'error');
+        showToast(result?.message || t('operations.addError'), 'error');
       }
     } catch (error) {
+      console.error('Update error:', error);
       showToast(t('operations.connectionError'), 'error');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // For the Add Annonce button in the header
+  const handleHeaderAddClick = () => {
+    if (announcementRef.current) {
+      announcementRef.current.openAddModal();
     }
   };
 
@@ -259,11 +237,13 @@ const OperationDetails = () => {
                 >
                   {t('operationDetails.operationNumber')} : {operation.Numero || operation.NumOperation}
                 </div>
-                <h1 className="text-lg lg:text-xl text-gray-700 font-extrabold mb-3 tracking-tight leading-tight">
-                  {t('operationDetails.object')}{' : '}
-                  {operation.Objet || operation.Objectif || (
-                    <span className="italic text-gray-400">{t('operationDetails.noObject')}</span>
-                  )}
+                <h1 className="text-[1.1rem] lg:text-[1.3rem] text-slate-800 font-semibold mb-2 tracking-wide leading-snug font-sans">
+                  <span className="text-slate-400 font-normal">{t('operationDetails.object')} : </span>
+                  <span className="text-slate-700 font-medium italic">
+                    {operation.Objet || operation.Objectif || (
+                      <span className="italic text-gray-400">{t('operationDetails.noObject')}</span>
+                    )}
+                  </span>
                 </h1>
               </div>
               <div className="mt-3 lg:mt-0 lg:ml-6 flex-shrink-0">
@@ -286,20 +266,37 @@ const OperationDetails = () => {
               <DetailsCard
                 leading={<div className="w-0.5 h-4 rounded-full bg-green-600" />}
                 cardTitle={`Nº : ${operation.Numero || operation.NumOperation}`}
-                statusCode={operation.StateCode}
+                statusCode={operation.State}
                 onValidate={() => {/* TODO: handle validate operation */}}
                 onModify={handleOpenEditModal}
                 Icon={Hash}
                 disabled={false}
               >
                 <div className="p-4 bg-white">
-                  <DetailRow label={t('operationDetails.object')} value={operation.Objet || operation.Objectif} />
-                  <DetailRow label={t('operationDetails.service')} value={operation.Service_Contractant || operation.ServiceDeContract} />
-                  <DetailRow label={t('operationDetails.type')} value={typeTravauxMap[operation.TypeTravauxCode]} />
-                  <DetailRow label={t('operationDetails.budget')} value={typeBudgetMap[operation.TypeBudgetCode]} />
-                  <DetailRow label={t('operationDetails.attribution')} value={modeAttribuationMap[operation.ModeAttributionCode]} />
-                  <DetailRow label={t('operationDetails.visaNumber')} value={operation.NumeroVisa || operation.VisaNumber} />
-                  <DetailRow label={t('operationDetails.visaDate')} value={formatDate(operation.VisaDate)} />
+                  <DetailRow 
+                    label={t('operationDetails.service')} 
+                    value={operation.Service_Contractant || operation.ServiceDeContract || 'N/A'} 
+                  />
+                  <DetailRow 
+                    label={t('operationDetails.type')} 
+                    value={typeTravauxMap[operation.TypeTravaux] || 'N/A'} 
+                  />
+                  <DetailRow 
+                    label={t('operationDetails.budget')} 
+                    value={typeBudgetMap[operation.TypeBudget] || 'N/A'} 
+                  />
+                  <DetailRow 
+                    label={t('operationDetails.attribution')} 
+                    value={modeAttribuationMap[operation.ModeAttribuation] || 'N/A'} 
+                  />
+                  <DetailRow 
+                    label={t('operationDetails.visaNumber')} 
+                    value={operation.NumeroVisa || operation.VisaNumber || 'N/A'} 
+                  />
+                  <DetailRow 
+                    label={t('operationDetails.visaDate')} 
+                    value={operation.VisaDate ? formatDate(operation.VisaDate) : (operation.DateVisa ? formatDate(operation.DateVisa) : 'N/A')} 
+                  />
                 </div>
               </DetailsCard>
 
@@ -320,8 +317,8 @@ const OperationDetails = () => {
                 <div className="p-4 bg-white">
                 {currentAnnounce ? (
                     <>
-                      <DetailRow label={t('operationDetails.announcementNumber')} value={currentAnnounce.Numero} />
-                      <DetailRow label={t('operationDetails.journal')} value={currentAnnounce.Journal} />
+                      <DetailRow label={t('operationDetails.announcementNumber')} value={currentAnnounce.Numero || 'N/A'} />
+                      <DetailRow label={t('operationDetails.journal')} value={currentAnnounce.Journal || 'N/A'} />
                       <DetailRow
                         label={t('operationDetails.publicationDate')}
                         value={currentAnnounce.Date_Publication ? formatDate(currentAnnounce.Date_Publication) : "N/A"}
@@ -358,7 +355,7 @@ const OperationDetails = () => {
 
               <SpecificationsSection
                 operationID={opId}
-                Specifications={cahierDeCharges}
+                Specifications={suppliers}
                 refreshData={refreshOperationData} 
               />
             </main>
@@ -375,20 +372,17 @@ const OperationDetails = () => {
         </div>
       </div>
 
-      {/* Modal for editing operation */}
       <FormModal
-        isOpen={showOperationModal}
-        onClose={() => {
-          setShowOperationModal(false);
-        }}
-        onSave={handleSaveOperation}
-        title={t('operations.editOperation', 'Modifier l\'opération')}
-        saveText={t('edit', 'Modifier')}
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onSave={handleUpdateOperation}
+        title={t('operations.editOperation')}
+        saveText={t('edit')}
         isLoading={isSubmitting}
       >
         <NewOperationForm 
-          newOperationData={newOperationData} 
-          setNewOperationData={setNewOperationData}
+          newOperationData={editFormData} 
+          setNewOperationData={setEditFormData}
           isEditing={true}
         />
       </FormModal>
