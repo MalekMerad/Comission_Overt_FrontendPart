@@ -8,8 +8,7 @@ const updateSupplierApi = 'http://localhost:5000/api/supplier/updateSupplier';
 const insertSelectedSupplierApi = 'http://localhost:5000/api/supplier/insertSelectedSupplier';
 
 const supplierSchema = yup.object().shape({
-    NomPrenom: yup.string().required(),
-    NomSociete: yup.string().required(),
+    Nom: yup.string().required(),
     NatureJuridique: yup.string().required(),
     Adresse: yup.string().required(),
     Telephone: yup.string().required(),
@@ -24,8 +23,7 @@ const supplierSchema = yup.object().shape({
 
 export const newSupplier = (formData) => {
   const dataToSend = {
-    NomPrenom: formData.NomPrenom,
-    NomSociete: formData.NomSociete,
+    Nom: formData.Nom,
     NatureJuridique: formData.NatureJuridique,
     Adresse: formData.Adresse,
     Telephone: formData.Telephone,
@@ -100,8 +98,7 @@ export const updateSupplier = async (formData, showToast) => {
     try {
         const dataToSend = {
             Id: formData.Id,
-            NomPrenom: formData.NomPrenom,
-            NomSociete: formData.NomSociete,
+            Nom: formData.Nom,
             NatureJuridique: formData.NatureJuridique,
             Adresse: formData.Adresse,
             Telephone: formData.Telephone,
@@ -129,7 +126,7 @@ export const updateSupplier = async (formData, showToast) => {
 export const addSelectedSupplier = async (supplierData) => {
   try {
     const payload = {
-      NomPrenom: supplierData.NomPrenom,
+      Nom: supplierData.Nom,
       Adresse: supplierData.Adresse,
       Telephone: supplierData.Telephone,
       Email: supplierData.Email,

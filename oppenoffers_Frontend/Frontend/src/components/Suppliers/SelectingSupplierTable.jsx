@@ -9,7 +9,7 @@ export function SupplierListTable({
       <table className="w-full border-collapse border border-gray-300 text-sm">
         <thead>
           <tr className="bg-gray-100">
-            <th className="border px-4 py-2 text-left">Nom & Prénom</th>
+            <th className="border px-4 py-2 text-left">Nom ou Raison Sociale</th>
             <th className="border px-4 py-2 text-left">Téléphone</th>
             <th className="border px-4 py-2 text-left">Email</th>
             <th className="border px-4 py-2 text-left">Adresse</th>
@@ -26,7 +26,7 @@ export function SupplierListTable({
 
             return (
               <tr key={supplier.Id} className="hover:bg-gray-50">
-                <td className="border border-gray-300 px-4 py-2">{supplier.NomPrenom}</td>
+                <td className="border border-gray-300 px-4 py-2">{supplier.Nom}</td>
                 <td className="border border-gray-300 px-4 py-2">{supplier.Telephone}</td>
                 <td className="border border-gray-300 px-4 py-2">{supplier.Email}</td>
                 <td className="border border-gray-300 px-4 py-2">{supplier.Adresse}</td>

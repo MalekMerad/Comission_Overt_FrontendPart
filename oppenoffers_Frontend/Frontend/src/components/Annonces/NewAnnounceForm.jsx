@@ -36,7 +36,6 @@ export function NewAnnounceForm({ newAnnouncement, setNewAnnouncement, isEditing
                             onChange={e => setNewAnnouncement({ ...newAnnouncement, numero: e.target.value })}
                             className={`${inputBaseClasses} ${isEditing ? 'cursor-default' : ''} flex-1 ml-[+7%]`}
                             placeholder={t('announceForm.numeroPlaceholder', { defaultValue: "Ex: 2024/01" })}
-                            readOnly={!!isEditing}
                         />
                     </div>
                 </div>

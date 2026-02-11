@@ -16,7 +16,6 @@ export function SuppliersSection() {
   const [showModal, setShowModal] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
   const [newSupplier, setNewSupplier] = useState({
-    NomSociete: "",
     NatureJuridique: "SARL",
     Nif: "",
     Rc: "",
@@ -26,7 +25,7 @@ export function SuppliersSection() {
     AgenceBancaire: "",
     Rib: "",
     Ai: "",
-    NomPrenom: "",
+    Nom: "",
   });
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -67,10 +66,9 @@ export function SuppliersSection() {
   const filteredSuppliers = suppliers.filter(supplier => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) return true;
-    const nomSociete = (supplier.NomSociete || '').toLowerCase();
     const telephone = (supplier.Telephone || '').toLowerCase();
     const email = (supplier.Email || '').toLowerCase();
-    return nomSociete.includes(term) || telephone.includes(term) || email.includes(term);
+    return telephone.includes(term) || email.includes(term);
   });
 
   const handleModalOpen = (supplier = null) => {
@@ -80,7 +78,6 @@ export function SuppliersSection() {
     } else {
       setEditingSupplier(null);
       setNewSupplier({
-        NomSociete: "",
         NatureJuridique: "SARL",
         Nif: "",
         Rc: "",
@@ -90,7 +87,7 @@ export function SuppliersSection() {
         AgenceBancaire: "",
         Rib: "",
         Ai: "",
-        NomPrenom: "",
+        Nom: "",
       });
     }
     setShowModal(true);

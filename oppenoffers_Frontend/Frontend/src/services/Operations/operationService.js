@@ -7,6 +7,7 @@ const deleteOperationApi = (numOperation) => `http://localhost:5000/api/opr/dele
 const manageArchiveOperationApi = (id) => `http://localhost:5000/api/opr/manageArchiveOperation/${id}`;
 const getOperationByIdApi = (op) => `http://localhost:5000/api/opr/operationById/${op}`;
 const updateOperationApi = 'http://localhost:5000/api/opr/updateOperation';
+const validateOperationApi = (operationId) => `http://localhost:5000/api/opr/validateOperation/${operationId}`;
 
 const operationSchema = yup.object().shape({
     NumOperation: yup.string().required(),
@@ -116,4 +117,31 @@ export const getOperationByIdService = async (op) => {
 export const updateOperation = (formData) => {
     console.log('Sending operation update data:', formData);
     return api(updateOperationApi, 'PUT', formData, operationSchema);
+};
+
+export const validateOperationService = async (operationId) => {
+    if (!operationId) {
+        return Promise.reject(new Error('operationId is required'));
+    }
+    try {
+        const res = await api(validateOperationApi(operationId), 'PATCH');
+        if (res.success) {
+            return {
+                success: true,
+                message: res.message
+            };
+        } else {
+            return {
+                success: false,
+                message: res.message || "Erreur lors de la validation de l'opération.",
+                error: res.error || undefined
+            };
+        }
+    } catch (error) {
+        return {
+            success: false,
+            message: "Erreur interne lors de la validation de l'opération.",
+            error: error.message
+        };
+    }
 };

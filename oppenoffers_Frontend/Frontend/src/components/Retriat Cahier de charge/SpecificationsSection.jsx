@@ -9,7 +9,7 @@ import { SupplierModals } from '../Suppliers/SupplierModals';
 import { RetraitModal } from './RetraitModal';
 import { getAllSuppliers, addSelectedSupplier } from '../../services/Suppliers/supplierService';
 
-export function SpecificationsSection({ operationID, Specifications, refreshData }) {
+export function SpecificationsSection({ operationID, Specifications, refreshData, showButton }) {
   const { user } = useAuth();
   const { showToast } = useToast();
   
@@ -144,7 +144,7 @@ export function SpecificationsSection({ operationID, Specifications, refreshData
         showSearch={false}
         showFilter={false}
         onButtonClick={() => setShowModal(true)}
-        showButton={true}
+        showButton={showButton}
       >
         <SpecificationsTable
           specifications={Specifications || []}

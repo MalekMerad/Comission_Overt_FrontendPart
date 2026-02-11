@@ -9,7 +9,8 @@ export function DetailsCard({
   children,
   leading,
   Icon,
-  disabled
+  showButton,
+  disabled // Added missing prop
 }) {
   
   const statusConfig = {
@@ -38,7 +39,6 @@ export function DetailsCard({
 
   const StatusIcon = status.Icon;
 
-
   return (
     <aside className="w-full lg:w-80 flex-shrink-0 space-y-4">
       <section className="bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
@@ -59,25 +59,27 @@ export function DetailsCard({
         </div>
         {children}
         <div className="p-3 bg-gray-50 border-t border-gray-200 grid grid-cols-2 gap-2">
-          <button
-            className="px-2 py-1.5 bg-white border border-gray-300 text-slate-700 rounded text-[10px] font-bold uppercase hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            onClick={onModify}
-            type="button"
-          >
-            Modifier
-          </button>
-          <button
-            className={`px-2 py-1.5 rounded text-[10px] font-bold uppercase transition-colors cursor-pointer ${
-              disabled
-                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                : "bg-slate-700 text-white hover:bg-slate-800"
-            }`}
-            onClick={disabled ? undefined : onValidate}
-            type="button"
-            disabled={disabled}
-          >
-            Valider
-          </button>
+          {showButton && !disabled && (
+                <button
+                  className="px-2 py-1.5 bg-white border border-gray-300 text-slate-700 rounded text-[10px] font-bold uppercase hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  onClick={onModify}
+                  type="button"
+                  disabled={disabled} 
+                 >
+                       Modifier
+                 </button>
+          )}
+ 
+          
+          {showButton && !disabled && (
+            <button
+              className="px-2 py-1.5 rounded text-[10px] font-bold uppercase transition-colors cursor-pointer bg-slate-700 text-white hover:bg-slate-800"
+              onClick={onValidate}
+              type="button"
+            >
+              Valider
+            </button>
+          )}
         </div>
       </section>
     </aside>

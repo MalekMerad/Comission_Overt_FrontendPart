@@ -5,6 +5,7 @@ const addAnnonceApi = `http://localhost:5000/api/ann/addAnnonce`;
 const getAllAnnoncesApi = `http://localhost:5000/api/ann/AllAnnonces`;
 const deleteAnnonceApi = (id) => `http://localhost:5000/api/ann/deleteAnnonce/${id}`;
 const updateAnnonceApi = 'http://localhost:5000/api/ann/updateAnnonce';
+const validateAnnonceApi = (annonceId) => `http://localhost:5000/api/ann/validateAnnonce/${annonceId}`;
 
 const annonceSchema = yup.object().shape({
     Id_Operation: yup.string().required(),
@@ -43,10 +44,18 @@ export const getAllAnnonces = (adminID, operationID) => {
             }
         });
 };
+
 export const deleteAnnonce = (id) => {
     return api(deleteAnnonceApi(id), 'DELETE');
 };
 
 export const updateAnnonce = (formData) => {
     return api(updateAnnonceApi, 'PUT', formData);
+};
+
+export const validateAnnonce = (annonceId) => {
+    if (!annonceId) {
+        return Promise.reject(new Error("annonceId is required"));
+    }
+    return api(validateAnnonceApi(annonceId), 'PATCH');
 };

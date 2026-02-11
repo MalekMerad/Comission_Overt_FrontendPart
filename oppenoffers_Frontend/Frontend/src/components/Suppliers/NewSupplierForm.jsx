@@ -2,14 +2,14 @@ export function NewSupplierForm({ newSupplier, setNewSupplier }) {
 
     return (
         <div className="space-y-4">
-                {/* Row 1: Raison sociale & RC */}
+                {/* Row 1: Nom && Raison sociale & RC */}
                 <div className="grid grid-cols-1">
                     <label className="block text-sm mb-1">Nom ou Raison Sociale <span className="text-red-500">*</span></label>
                     <input
                       type="text"
-                      value={newSupplier.NomPrenom}
+                      value={newSupplier.Nom}
                       onChange={e =>
-                        setNewSupplier({ ...newSupplier, NomPrenom: e.target.value })
+                        setNewSupplier({ ...newSupplier, Nom: e.target.value })
                       }
                       className="w-full border px-3 py-2 rounded"
                       placeholder="Ex: Ahmed Benali"

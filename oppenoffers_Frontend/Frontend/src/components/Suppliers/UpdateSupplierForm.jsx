@@ -5,12 +5,12 @@ export function UpdateSupplierForm({ newSupplier, setNewSupplier }) {
                 {/* Row 1: Raison sociale & RC */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="mb-4">
-                    <label className="block text-sm mb-1">Nom et Prénom <span className="text-red-500">*</span></label>
+                    <label className="block text-sm mb-1">Nom ou Raison Sociale <span className="text-red-500">*</span></label>
                     <input
                       type="text"
-                      value={newSupplier.NomPrenom}
+                      value={newSupplier.Nom}
                       onChange={e =>
-                        setNewSupplier({ ...newSupplier, NomPrenom: e.target.value })
+                        setNewSupplier({ ...newSupplier, Nom: e.target.value })
                       }
                       className="w-full border px-3 py-2 rounded"
                       placeholder="Ex: Ahmed Benali"
@@ -37,16 +37,6 @@ export function UpdateSupplierForm({ newSupplier, setNewSupplier }) {
                       onChange={e => setNewSupplier({ ...newSupplier, Email: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded"
                       placeholder="Ex: fournisseur@email.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm mb-1">Raison sociale <span className="text-red-500">*</span></label>
-                    <input
-                      type="text"
-                      value={newSupplier.NomSociete}
-                      onChange={e => setNewSupplier({ ...newSupplier, NomSociete: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded"
-                      placeholder="Ex: SARL El Amine Commerce"
                     />
                   </div>
                 </div>

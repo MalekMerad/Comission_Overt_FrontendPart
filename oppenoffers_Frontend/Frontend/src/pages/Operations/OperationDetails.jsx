@@ -4,20 +4,23 @@ import { ArrowLeft, Hash, Megaphone, Plus } from "lucide-react";
 import DetailRow from '../../components/Shared/Cards/DetailRowCard';
 import { DetailsCard } from '../../components/Shared/Cards/DetailsCard';
 
-import { updateOperation } from '../../services/Operations/operationService';
+import { updateOperation, validateOperationService } from '../../services/Operations/operationService';
 import { FormModal } from '../../components/Shared/FormModal';
 import { NewOperationForm } from '../../components/Operations/NewOperationForm';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../context/AuthContext';
+import { validateAnnonce } from '../../services/Annonces/annonceService';
 
 import { fetchOperationDetails } from '../../components/Operations/FetchOperationDetails';
 
 import { LotsSubSection } from '../../components/Lots/LotsSubSection';
-import {SpecificationsSection} from '../../components/Retriat Cahier de charge/SpecificationsSection';
+import { SpecificationsSection } from '../../components/Retriat Cahier de charge/SpecificationsSection';
 import { AnnouncementSubSection } from '../../components/Annonces/AnnouncementSubSection';
 
 import { Sidebar } from '../../components/Shared/Sidebar';
 import { useTranslation } from 'react-i18next';
+
+import { ConfirmValidateModal } from '../../components/Shared/tools/ValidateConfirmation';
 
 const typeBudgetMap = { 1: 'Equipement', 2: 'Fonctionnement', 3: 'Opérations Hors Budget' };
 const modeAttribuationMap = {
@@ -52,7 +55,6 @@ const OperationDetails = () => {
   const { showToast } = useToast();
   const { user } = useAuth();
 
-  // Compute opId ONCE using URL param, location state, or path, to be used everywhere
   const [opId, setOpId] = useState(() =>
     id ||
     location.state?.operation?.id ||
@@ -61,65 +63,46 @@ const OperationDetails = () => {
   );
 
   const [operation, setOperation] = useState(location.state?.operation || null);
-
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!location.state?.operation);
   const [fetchError, setFetchError] = useState(null);
-
   const [lots, setLots] = useState([]);
-  
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editFormData, setEditFormData] = useState({});
-  
-  const [announces, setAnnounces] = useState([]);
-  const [currentAnnounce, setCurrentAnnounce] = useState([]);
-  const [suppliers, setSuppliers] = useState([]);
 
-  // Add isSubmitting state
+  const [showValidateOperationModal, setShowValidateOperationModal] = useState(false);
+  const [showValidateAnnounceModal, setShowValidateAnnounceModal] = useState(false);
+
+  const [editFormData, setEditFormData] = useState({});
+  const [announces, setAnnounces] = useState([]);
+  const [currentAnnounce, setCurrentAnnounce] = useState(null);
+  const [suppliers, setSuppliers] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const refreshOperationData = async () => {
+  // --- DERIVED LOGIC STATES (The Plan) ---
+  const isOperationValidated = operation?.State === 1;
+  const hasAnnounce = announces && announces.length > 0 && announces.some(ann => ann?.Status !== 0);
+  const isAnnounceValidated = currentAnnounce?.Status === 1;
+
+  const refreshOperationData = async (isSilent = false) => {
     if (!opId) return;
-  
-    setLoading(true);
+    if (!isSilent) setLoading(true);
     try {
       const result = await fetchOperationDetails(opId);
-  
       if (result.success && result.operation) {
-        console.log('Fetched operation data:', result.operation);
         setOperation(result.operation);
         setLots(result.lots || []);
         setAnnounces(result.announces || []);
         setSuppliers(result.suppliers || []);
         setFetchError(null);
       } else {
-        console.error('Failed to fetch operation:', result.message);
         setFetchError(result.message || 'Failed to fetch operation data');
       }
     } catch (err) {
-      console.error('Error fetching operation details:', err);
       setFetchError(err?.message || 'Unexpected error');
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   };
-  
-  useEffect(() => {
-    const resolvedId = id ||
-      location.state?.operation?.id ||
-      location.pathname.match(/(\d+)$/)?.[1] ||
-      null;
-    
-    if (resolvedId && resolvedId !== opId) {
-      setOpId(resolvedId);
-    }
-    
-    if (!resolvedId) {
-      setFetchError(t('operationDetails.operationNotFound'));
-      return;
-    }
-  }, [id, location.pathname, location.state?.operation?.id]);
 
-  // Fetch data when opId changes
   useEffect(() => {
     if (opId) {
       localStorage.setItem('opId', opId);
@@ -128,11 +111,14 @@ const OperationDetails = () => {
   }, [opId]);
 
   useEffect(() => {
-    const found = announces.filter(ann => ann?.Status === 1);
-    setCurrentAnnounce(found.length > 0 ? found[0] : null);
+    if (announces) {
+      const found = announces.find(ann => ann?.Status !== 0);
+      setCurrentAnnounce(found || null);
+    }
   }, [announces]);
 
   const handleOpenEditModal = () => {
+    if (!operation) return;
     setEditFormData({
       NumOperation: operation.Numero || operation.NumOperation,
       ServContract: operation.Service_Contractant || operation.ServiceDeContract,
@@ -150,55 +136,55 @@ const OperationDetails = () => {
   const handleUpdateOperation = async () => {
     setIsSubmitting(true);
     try {
-      const formData = {
-        Id: opId,
-        ...editFormData,
-        adminID: user?.userId
-      };
-
-      console.log('📤 Sending update data:', formData);
-
-      const result = await updateOperation(formData);
-
+      const result = await updateOperation({ Id: opId, ...editFormData, adminID: user?.userId });
       if (result?.success || result?.code === 0) {
         showToast(t('operations.updatedSuccess'), 'success');
         setShowEditModal(false);
-        
-        // Update the operation state with the new data immediately
-        setOperation(prev => ({
-          ...prev,
-          Numero: formData.NumOperation,
-          NumOperation: formData.NumOperation,
-          Service_Contractant: formData.ServContract,
-          ServiceDeContract: formData.ServContract,
-          Objet: formData.Objectif,
-          Objectif: formData.Objectif,
-          TypeTravauxCode: parseInt(formData.TravalieType) || prev.TypeTravauxCode,
-          TypeBudgetCode: parseInt(formData.BudgetType) || prev.TypeBudgetCode,
-          ModeAttributionCode: parseInt(formData.MethodAttribuation) || prev.ModeAttributionCode,
-          NumeroVisa: formData.VisaNum,
-          VisaNumber: formData.VisaNum,
-          DateVisa: formData.DateVisa,
-          VisaDate: formData.DateVisa
-        }));
-        
-        // Also refresh from server to get all data
-        refreshOperationData();
+        refreshOperationData(true);
       } else {
         showToast(result?.message || t('operations.addError'), 'error');
       }
     } catch (error) {
-      console.error('Update error:', error);
       showToast(t('operations.connectionError'), 'error');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // For the Add Annonce button in the header
-  const handleHeaderAddClick = () => {
-    if (announcementRef.current) {
-      announcementRef.current.openAddModal();
+  const handleValidateOperation = async () => {
+    setShowValidateOperationModal(false);
+    setIsSubmitting(true);
+    try {
+      const result = await validateOperationService(opId);
+      if (result?.success) {
+        showToast(t('operations.validatedSuccess'), 'success');
+        await refreshOperationData(true);
+      } else {
+        showToast(result?.message || t('operations.validationError'), 'error');
+      }
+    } catch (err) {
+      showToast(t('operations.connectionError'), 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleValidateAnnounce = async () => {
+    if (!currentAnnounce) return;
+    setShowValidateAnnounceModal(false);
+    setIsSubmitting(true);
+    try {
+      const result = await validateAnnonce(currentAnnounce.id);
+      if (result?.success) {
+        showToast(t('announce.validatedSuccess'), 'success');
+        await refreshOperationData(true);
+      } else {
+        showToast(result?.message || t('announce.validationError'), 'error');
+      }
+    } catch (error) {
+      showToast(t('Announce.connectionError'), 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -225,53 +211,74 @@ const OperationDetails = () => {
   return (
     <>
       <Sidebar activeSection="operations" />
+
+      <ConfirmValidateModal
+        isOpen={showValidateOperationModal}
+        onClose={() => setShowValidateOperationModal(false)}
+        onConfirm={handleValidateOperation}
+        title={t('operations.confirmValidationTitle') || "Validation Operation"}
+        message={t('operations.confirmValidationMsg') || "Êtes-vous sûr de vouloir valider cette opération ?"}
+        ButtonContext={t('validate') || "Valider"}
+      />
+
+      <ConfirmValidateModal
+        isOpen={showValidateAnnounceModal}
+        onClose={() => setShowValidateAnnounceModal(false)}
+        onConfirm={handleValidateAnnounce}
+        title={t('announce.confirmValidationTitle') || "Validation de l'annonce"}
+        message={t('announce.confirmValidationMsg') || "Êtes-vous sûr de vouloir valider cette annonce ?"}
+        ButtonContext={t('validate') || "Valider"}
+      />
+
       <div className="flex">
         <div className="p-8 max-w-[1600px] mx-auto flex-1">
-          {/* header Operation Details */}
+          {/* HEADER SECTION */}
           <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-center mb-8">
             <div className="flex-1 min-w-0 flex flex-col lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <div
-                  className="text-slate-500 font-medium text-xs lg:text-sm whitespace-pre-line break-words max-w-[300px] leading-[1.5] tracking-[0.01em] border-l-4 border-gry-900 pl-4 bg-slate-50 mb-2"
-                  title={operation.Numero || operation.NumOperation || ""}
-                >
-                  {t('operationDetails.operationNumber')} : {operation.Numero || operation.NumOperation}
+                <div className="text-slate-500 font-medium text-xs border-l-4 border-gray-900 pl-4 bg-slate-50 mb-2">
+                  {t('operationDetails.operationNumber')} : {operation?.Numero || operation?.NumOperation}
                 </div>
-                <h1 className="text-[1.1rem] lg:text-[1.3rem] text-slate-800 font-semibold mb-2 tracking-wide leading-snug font-sans">
+                <p className="text-sm lg:text-base text-slate-800 font-semibold mb-1">
                   <span className="text-slate-400 font-normal">{t('operationDetails.object')} : </span>
                   <span className="text-slate-700 font-medium italic">
-                    {operation.Objet || operation.Objectif || (
-                      <span className="italic text-gray-400">{t('operationDetails.noObject')}</span>
-                    )}
+                    {operation?.Objet || operation?.Objectif || <span className="italic text-gray-400">{t('operationDetails.noObject')}</span>}
                   </span>
-                </h1>
+                </p>
               </div>
+              
               <div className="mt-3 lg:mt-0 lg:ml-6 flex-shrink-0">
-                <button
-                  type="button"
-                  className="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-md shadow-sm transition-colors cursor-pointer"
-                  onClick= {handleHeaderAddClick} 
-                >
-                  <span className="mr-2"><Plus size={16} /></span>
-                  {t('operationDetails.addAnnouncement')}
-                </button>
+                {/* 2- Show Create New Announce ONLY if Operation is validated AND no announce exists */}
+                {isOperationValidated && !hasAnnounce && (
+                  <button
+                    type="button"
+                    className="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-md shadow-sm transition-colors cursor-pointer"
+                    onClick={() => announcementRef.current?.openAddModal()}
+                  >
+                    <Plus size={16} className="mr-2" />
+                    {t('operationDetails.addAnnouncement')}
+                  </button>
+                )}
               </div>
-            </div>        
+            </div>
           </div>
 
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* LEFT SIDEBAR */}
             <aside className="w-full lg:w-80 flex-shrink-0 space-y-4">
-              {/* Operation Card */}
+              
+              {/* OPERATION CARD: 1- Buttons hide once validated */}
               <DetailsCard
                 leading={<div className="w-0.5 h-4 rounded-full bg-green-600" />}
-                cardTitle={`Nº : ${operation.Numero || operation.NumOperation}`}
-                statusCode={operation.State}
-                onValidate={() => {/* TODO: handle validate operation */}}
+                cardTitle={`Nº : ${operation?.Numero || operation?.NumOperation}`}
+                statusCode={operation?.State}
+                onValidate={() => setShowValidateOperationModal(true)}
                 onModify={handleOpenEditModal}
                 Icon={Hash}
-                disabled={false}
+                showButton={!isOperationValidated}
+                disabled={isSubmitting}
               >
+                <div className="p-4 bg-white">
                 <div className="p-4 bg-white">
                   <DetailRow 
                     label={t('operationDetails.service')} 
@@ -298,24 +305,22 @@ const OperationDetails = () => {
                     value={operation.VisaDate ? formatDate(operation.VisaDate) : (operation.DateVisa ? formatDate(operation.DateVisa) : 'N/A')} 
                   />
                 </div>
+                </div>
               </DetailsCard>
 
-              {/* Announce Card */}
+              {/* ANNOUNCE CARD: 3- Buttons displayed if announce exists and not validated */}
               <DetailsCard
-                leading={<div className="w-0.5 h-4 bg-orange-500 rounded-sm"/>}
                 cardTitle={t('operationDetails.announcement')}
                 statusCode={currentAnnounce?.Status}
-                onValidate={() => alert("Validation de l'annonce non implémentée")}
-                onModify={() => {
-                  if (currentAnnounce && announcementRef.current) {
-                    announcementRef.current.openEditModal(currentAnnounce);
-                  }
-                }}
+                onValidate={() => setShowValidateAnnounceModal(true)}
+                onModify={() => announcementRef.current?.openEditModal(currentAnnounce)}
+                leading={<div className="w-0.5 h-4 bg-orange-500 rounded-sm" />}
                 Icon={Megaphone}
-                disabled={operation.Status == 1 ? true : false}
+                showButton={hasAnnounce && !isAnnounceValidated}
+                disabled={isSubmitting}
               >
                 <div className="p-4 bg-white">
-                {currentAnnounce ? (
+                  {currentAnnounce ? (
                     <>
                       <DetailRow label={t('operationDetails.announcementNumber')} value={currentAnnounce.Numero || 'N/A'} />
                       <DetailRow label={t('operationDetails.journal')} value={currentAnnounce.Journal || 'N/A'} />
@@ -333,37 +338,41 @@ const OperationDetails = () => {
                     </>
                   ) : (
                     <p className="text-gray-400 text-xs italic">{t('operationDetails.noAnnouncement')}</p>
-                  )}  
+                  )}
                 </div>
               </DetailsCard>
             </aside>
 
             {/* RIGHT CONTENT */}
             <main className="flex-1 w-full space-y-6">
-              <AnnouncementSubSection 
+              <AnnouncementSubSection
                 ref={announcementRef}
                 operationID={opId}
                 Annonces={announces}
-                refreshData={refreshOperationData}
+                refreshData={() => refreshOperationData(true)}
               />
-              
+
+              {/* 1- Lot button shown only before operation validation */}
               <LotsSubSection
                 operationID={opId}
                 Lots={lots}
-                refreshData={refreshOperationData} 
+                refreshData={() => refreshOperationData(true)}
+                showButton={!isOperationValidated}
               />
 
+              {/* 4- SpecificationSection shown only after announce validation */}
               <SpecificationsSection
                 operationID={opId}
                 Specifications={suppliers}
-                refreshData={refreshOperationData} 
+                refreshData={() => refreshOperationData(true)}
+                showButton={isAnnounceValidated}
               />
             </main>
           </div>
-          {/* Button fermer */}
-          <div className="flex justify-end pt-1 px-1">
+
+          <div className="flex justify-end pt-4">
             <button
-              className="flex items-center justify-center px-8 py-2 bg-white border border-gray-300 text-slate-700 rounded text-[10px] font-bold uppercase hover:bg-gray-100 min-w-[100px] cursor-pointer"
+              className="px-8 py-2 bg-white border border-gray-300 text-slate-700 rounded text-[10px] font-bold uppercase hover:bg-gray-100 cursor-pointer"
               onClick={() => navigate('/admin')}
             >
               {t('operationDetails.close')}
@@ -380,8 +389,8 @@ const OperationDetails = () => {
         saveText={t('edit')}
         isLoading={isSubmitting}
       >
-        <NewOperationForm 
-          newOperationData={editFormData} 
+        <NewOperationForm
+          newOperationData={editFormData}
           setNewOperationData={setEditFormData}
           isEditing={true}
         />

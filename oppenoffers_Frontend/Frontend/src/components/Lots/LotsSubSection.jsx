@@ -7,7 +7,7 @@ import { useToast } from '../../hooks/useToast';
 import { SectionsModal } from '../Shared/SectionsModal';
 import LotForm from './LotForm';
 
-export function LotsSubSection({ operationID, Lots, refreshData }) {
+export function LotsSubSection({ operationID, Lots, refreshData, showButton }) {
   const { user } = useAuth();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -164,12 +164,10 @@ export function LotsSubSection({ operationID, Lots, refreshData }) {
         title="Lots"
         icon={<Package className="w-4 h-4" />}
         buttonText="Ajouter Lot"
-        onButtonClick={() => {
-          console.log("Add button clicked, should open empty form");
-          handleOpenModal(); // Explicitly call without parameters
-        }}
         showSearch={false}
         showFilter={false}
+        onButtonClick={() => handleOpenModal()}
+        showButton={showButton}
       >
         <LotsTable
           Lots={Lots}

@@ -4,7 +4,7 @@ import { ConfirmDeleteModal } from "../Shared/tools/DeleteConfirmation";
 
 // Fields to check for completeness
 const REQUIRED_FIELDS = [
-  "NomPrenom",
+  "Nom",
   "Telephone",
   "Email",
   "Adresse",
@@ -12,7 +12,6 @@ const REQUIRED_FIELDS = [
   "Ai",
   "NatureJuridique",
   "Nif",
-  "NomSociete",
   "Rc",
   "Rib"
 ];
@@ -58,7 +57,7 @@ export function SuppliersTable({ suppliers, handleModalOpen, handleDeleteSupplie
         <table className="w-full border-collapse border border-gray-300">
           <thead className="bg-gray-100">
             <tr>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Nom & Prénom</th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Nom ou Raison Sociale</th>
               <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Téléphone</th>
               <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Email</th>
               <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Adresse</th>
@@ -78,7 +77,7 @@ export function SuppliersTable({ suppliers, handleModalOpen, handleDeleteSupplie
                 const complete = isSupplierComplete(supplier);
                 return (
                   <tr key={supplier.Id || idx} className="hover:bg-gray-50 transition-colors">
-                    <td className="border border-gray-300 px-4 py-2 text-sm">{supplier.NomPrenom}</td>
+                    <td className="border border-gray-300 px-4 py-2 text-sm">{supplier.Nom}</td>
                     <td className="border border-gray-300 px-4 py-2 text-sm">{supplier.Telephone}</td>
                     <td className="border border-gray-300 px-4 py-2 text-sm">{supplier.Email}</td>
                     <td className="border border-gray-300 px-4 py-2 text-sm">{supplier.Adresse}</td>

@@ -6,12 +6,7 @@ import { AnnouncementsTable } from './AnnouncementsTable';
 import { FormModal } from '../Shared/FormModal';
 import { NewAnnounceForm } from './NewAnnounceForm';
 import { useToast } from '../../hooks/useToast';
-import { SectionsModal } from '../Shared/SectionsModal'; 
 import { useTranslation } from 'react-i18next';
-
-
-import { SearchBar } from '../Shared/tools/SearchBar';
-import DropDownFilter from '../Shared/dropDownFilter';
 
 export const AnnouncementSubSection = forwardRef(({ operationID, Annonces , refreshData}, ref) => {
   const { user } = useAuth();
@@ -255,32 +250,43 @@ export const AnnouncementSubSection = forwardRef(({ operationID, Annonces , refr
   };
 
   const handleSaveAnnouncement = async () => {
+    // 1. Construct the data object
     const formData = {
+      Id: editingAnnouncement ? editingAnnouncement.id : null, 
       Id_Operation: newAnnouncement.operationId,
       Numero: newAnnouncement.numero,
       Date_Publication: newAnnouncement.datePublication,
       Journal: newAnnouncement.journal,
       Delai: newAnnouncement.delai,
       Date_Overture: newAnnouncement.dateOuverture,
-      Heure_Ouverture: newAnnouncement.heureOuverture,
+      // Ensure we only send the time part HH:mm
+      Heure_Ouverture: newAnnouncement.heureOuverture, 
       adminId: user?.userId || user?.userid
     };
-
+  
     try {
       let result;
       if (editingAnnouncement) {
-        result = await updateAnnonce({ ...formData});
+        // Pass the formData which now contains the 'Id'
+        result = await updateAnnonce(formData);
       } else {
         result = await newAnnonce(formData);
       }
-
+  
       if (result.success) {
-        await fetchAnnouncements();
+        // Re-fetch to see changes
+        await fetchAnnouncements(); 
         setShowModal(false);
-        showToast('Annonce modifiée avec succès.', 'success');
-        refreshData();
+        showToast(
+          editingAnnouncement ? 'Annonce modifiée avec succès.' : 'Annonce ajoutée.', 
+          'success'
+        );
+        if(refreshData) refreshData();
+      } else if (result.code === 1005) {
+        showToast('Erreur : Annonce introuvable dans la base de données.', 'error');
       }
     } catch (error) {
+      console.error("Save error:", error);
       showToast('Erreur lors de l\'enregistrement', 'error');
     }
   };

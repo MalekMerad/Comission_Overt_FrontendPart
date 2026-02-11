@@ -21,7 +21,7 @@ export function SupplierModals({
   const safeLower = val => (typeof val === 'string' ? val.toLowerCase() : '');
   
   const filteredSuppliers = (suppliers || []).filter(supplier =>
-    safeLower(supplier?.NomPrenom).includes(safeLower(searchTerm)) ||
+    safeLower(supplier?.Nom).includes(safeLower(searchTerm)) ||
     safeLower(supplier?.Telephone).includes(safeLower(searchTerm)) ||
     safeLower(supplier?.Email).includes(safeLower(searchTerm)) ||
     safeLower(supplier?.Adresse).includes(safeLower(searchTerm))
