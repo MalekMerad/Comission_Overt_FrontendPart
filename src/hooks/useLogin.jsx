@@ -1,0 +1,114 @@
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useState } from 'react';
+import { sendResetLinkService } from '../services/sendResetLinkService';
+import { hashPasswordFrontend, obfuscateEmail } from '../utils/frontendCrypto';
+
+const loginApi = 'http://localhost:5000/api/auth/login';
+const resetPasswordApi = 'http://localhost:5000/api/auth/ResetPassword';
+
+export const useLogin = () => {
+  const { login } = useAuth();
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  const loginUser = async (email, password) => {
+    try {
+      // Hash password on frontend BEFORE sending
+      const hashedPassword = await hashPasswordFrontend(password);
+
+      // Obfuscate email to hide from casual viewing in DevTools
+      const obfuscatedEmail = obfuscateEmail(email);
+
+      const response = await fetch(loginApi, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          Email: obfuscatedEmail,
+          Password: hashedPassword,
+          obfuscated: true  // Flag to tell backend to decode email
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message);
+      }
+
+      login(
+        { userId: data.userId, role: data.role },
+        data.token
+      );
+
+      localStorage.setItem("userID", data.userId);
+      localStorage.setItem("role", data.role);
+      localStorage.setItem("token", data.token);
+
+      const role = parseInt(data.role);
+
+      if (role === 1) navigate("/dashboard");
+      if (role === 2) navigate("/adminPage");
+
+      return data;
+
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  return { loginUser, error };
+};
+
+export const ForgotPassword = () => {
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const sendResetLink = async (email) => {
+    try {
+      setError(null);
+      setLoading(true);
+      await sendResetLinkService(email);
+    } catch (err) {
+      setError(err.message);
+      console.error('ForgotPassword error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { sendResetLink, error, loading };
+};
+
+export const useResetPassword = () => {
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const resetPassword = async (token, password) => {
+    try {
+      setError(null);
+      setLoading(true);
+
+      const response = await fetch(resetPasswordApi, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Reset password failed');
+      }
+      return true;
+    } catch (err) {
+      setError(err.message);
+      console.error('ResetPassword error:', err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { resetPassword, error, loading };
+};
